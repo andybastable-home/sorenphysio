@@ -153,8 +153,13 @@ async function render() {
 
   const totalDone = EXERCISE_TEMPLATE.filter(e => completions.get(e.id) === true).length;
   const total = EXERCISE_TEMPLATE.length;
+  const pct = total > 0 ? Math.round((totalDone / total) * 100) : 0;
+  const complete = totalDone === total && total > 0;
 
-  let html = `<p class="day-summary">${totalDone} / ${total} done</p>`;
+  let html = `<div class="day-progress">`;
+  html += `<div class="ring${complete ? ' complete' : ''}" style="--pct:${pct}">`;
+  html += `<div class="ring-inner"><b>${totalDone}<i>/${total}</i></b><span class="ring-cap">done</span></div>`;
+  html += `</div></div>`;
 
   for (const group of groups) {
     const doneInGroup = group.items.filter(e => completions.get(e.id) === true).length;

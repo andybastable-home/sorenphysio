@@ -6,6 +6,15 @@
 - Single `app.js` (no modules, no bundler).
 - Dexie via pinned CDN: `https://unpkg.com/dexie@4.4.2/dist/dexie.min.js` (also in SW SHELL).
 
+## Design
+- Visual direction is **Night Training**: dark canvas (`#0b0f14`), one volt-green
+  accent (`#c6ff3d`), flat (no colored header bar), borders over drop-shadows.
+- **`design-style-guide.html`** is the canonical visual reference: design tokens
+  (the `:root` CSS custom properties live in `styles.css`), the component library,
+  states, and reserved gamification patterns. Any new feature must build from those
+  tokens/components so the app stays coherent — don't introduce new brand hues.
+- `design-proposals.html` is the original direction comparison, kept for reference.
+
 ## Version discipline
 Every commit that changes shell files must:
 1. Bump the footer version in `index.html` (`<span id="version">`).

@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Soren Physio — Visual Style Guide (Night Training)</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS  — the single source of truth.
+   These same variable names should live in :root in styles.css.
+   ============================================================ */
+:root{
+  /* ---- Color: surfaces ---- */
+  --bg:        #0b0f14;   /* app background (near-black blue) */
+  --surface:   #141a22;   /* cards, rows */
+  --surface-2: #1b2430;   /* inset tracks, ring remainder */
+  --border:    #1e2734;   /* default hairline on surfaces */
+  --border-strong:#2b3543;/* checkbox outline, dividers */
+
+  /* ---- Color: accent (volt) ---- */
+  --accent:     #c6ff3d;  /* the one brand accent — use sparingly */
+  --accent-ink: #0b0f14;  /* text/glyph sitting ON accent */
+  --accent-dim: rgba(198,255,61,.14); /* tints, hovers */
+
+  /* ---- Color: completed state ---- */
+  --done-surface:#171f17;
+  --done-border: #3d5e1c;
+
+  /* ---- Color: text ---- */
+  --text:       #e9eef5;  /* primary */
+  --text-muted: #7b8696;  /* labels, details, secondary */
+  --text-faint: #3f4a58;  /* version, disabled, decorative */
+
+  /* ---- Color: feedback (reserved) ---- */
+  --danger:  #ff5a4d;     /* destructive / reset actions (future) */
+  --warning: #ffb03d;
+
+  /* ---- Typography ---- */
+  --font: -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --fs-xs:.72rem; --fs-sm:.82rem; --fs-base:1rem;
+  --fs-lg:1.15rem; --fs-xl:1.6rem; --fs-2xl:2.25rem;
+  --fw-medium:600; --fw-bold:700; --fw-black:800;
+  --tracking-caps:.08em;  /* uppercase labels */
+
+  /* ---- Spacing (4px base) ---- */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s8:32px;
+
+  /* ---- Radius ---- */
+  --r-sm:9px;   /* checkbox */
+  --r-md:14px;  /* rows, buttons */
+  --r-lg:18px;  /* cards, ring card */
+  --r-pill:999px;
+
+  /* ---- Elevation (dark UI leans on borders, not big shadows) ---- */
+  --shadow-1:0 2px 8px rgba(0,0,0,.45);
+  --shadow-2:0 12px 30px -12px rgba(0,0,0,.65);
+  --glow-accent:0 0 0 1px rgba(198,255,61,.35),0 0 18px -4px rgba(198,255,61,.45);
+
+  /* ---- Motion ---- */
+  --dur-fast:120ms; --dur-med:200ms;
+  --ease:cubic-bezier(.4,0,.2,1);
+
+  /* ---- Touch ---- */
+  --tap-min:44px; /* minimum interactive height */
+}
+
+/* ============================================================
+   GUIDE PAGE LAYOUT (the documentation chrome itself)
+   ============================================================ */
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:var(--font);background:var(--bg);color:var(--text);
+  line-height:1.55;-webkit-font-smoothing:antialiased;
+}
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+@media(max-width:820px){.layout{grid-template-columns:1fr}.toc{display:none}}
+
+/* sidebar TOC */
+.toc{
+  position:sticky;top:0;align-self:start;height:100vh;overflow:auto;
+  border-right:1px solid var(--border);padding:28px 20px;background:#0a0d12;
+}
+.toc .logo{display:flex;align-items:center;gap:10px;margin-bottom:24px}
+.toc .dot{width:14px;height:14px;border-radius:4px;background:var(--accent);box-shadow:var(--glow-accent)}
+.toc .logo b{font-weight:var(--fw-black);font-size:.95rem;letter-spacing:-.01em}
+.toc a{
+  display:block;color:var(--text-muted);text-decoration:none;font-size:.86rem;
+  padding:6px 10px;border-radius:8px;transition:color var(--dur-fast),background var(--dur-fast);
+}
+.toc a:hover{color:var(--text);background:var(--surface)}
+.toc .grp{font-size:.66rem;text-transform:uppercase;letter-spacing:.16em;color:var(--text-faint);margin:18px 0 6px 10px;font-weight:700}
+
+.content{padding:48px 56px 120px;max-width:980px}
+@media(max-width:820px){.content{padding:32px 22px 80px}}
+
+.hero .kicker{text-transform:uppercase;letter-spacing:.22em;font-size:.72rem;color:var(--accent);font-weight:800}
+.hero h1{font-size:2.4rem;font-weight:var(--fw-black);letter-spacing:-.025em;margin:8px 0 10px}
+.hero p{color:var(--text-muted);max-width:68ch;font-size:1.05rem}
+
+section{padding-top:56px;scroll-margin-top:24px}
+section > h2{
+  font-size:1.45rem;font-weight:var(--fw-black);letter-spacing:-.01em;
+  padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:8px;
+  display:flex;align-items:baseline;gap:10px;
+}
+section > h2 .idx{color:var(--accent);font-size:.95rem;font-weight:700}
+section > .lead{color:var(--text-muted);margin-bottom:22px;max-width:70ch}
+h3{font-size:1rem;font-weight:var(--fw-bold);margin:26px 0 12px;color:var(--text)}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px}
+.grid{display:grid;gap:14px}
+.cols-2{grid-template-columns:repeat(2,1fr)}
+.cols-3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:680px){.cols-2,.cols-3{grid-template-columns:1fr}}
+
+/* swatches */
+.swatch{border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;background:var(--surface)}
+.swatch .chip{height:64px}
+.swatch .meta{padding:10px 12px}
+.swatch .name{font-weight:var(--fw-bold);font-size:.84rem}
+.swatch .var{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.72rem;color:var(--accent)}
+.swatch .use{font-size:.72rem;color:var(--text-muted);margin-top:2px}
+
+/* token tables */
+table{width:100%;border-collapse:collapse;font-size:.84rem;margin-top:6px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+th{color:var(--text-muted);font-weight:var(--fw-bold);font-size:.74rem;text-transform:uppercase;letter-spacing:.06em}
+td code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.78rem;color:var(--accent)}
+td .demo-box{display:inline-block;background:var(--surface-2);border:1px solid var(--border)}
+
+.specimen{padding:14px 0;border-bottom:1px solid var(--border)}
+.specimen:last-child{border-bottom:none}
+.specimen .lbl{font-size:.72rem;color:var(--text-muted);font-family:ui-monospace,monospace}
+
+/* spacing demo */
+.spacebar{background:var(--accent);height:14px;border-radius:3px}
+
+/* do / don't */
+.dd{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:680px){.dd{grid-template-columns:1fr}}
+.do,.dont{border-radius:var(--r-md);padding:16px;font-size:.86rem}
+.do{background:rgba(198,255,61,.07);border:1px solid var(--done-border)}
+.dont{background:rgba(255,90,77,.07);border:1px solid #5e2420}
+.do h4,.dont h4{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.do h4{color:var(--accent)} .dont h4{color:var(--danger)}
+.do ul,.dont ul{list-style:none;display:flex;flex-direction:column;gap:7px}
+.do li::before{content:"✓ ";color:var(--accent);font-weight:700}
+.dont li::before{content:"✕ ";color:var(--danger);font-weight:700}
+
+.pillrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.pill{font-size:.74rem;background:var(--surface-2);border:1px solid var(--border);padding:5px 11px;border-radius:var(--r-pill);color:var(--text-muted)}
+
+/* ============================================================
+   APP COMPONENT LIBRARY  (the real, canonical components)
+   These styles are the spec for styles.css.
+   ============================================================ */
+.demo-surface{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px}
+
+/* Header */
+.c-header{background:var(--bg);padding:var(--s2) var(--s4) var(--s4)}
+.c-brandrow{display:flex;align-items:center;justify-content:space-between}
+.c-brand{font-weight:var(--fw-black);font-size:var(--fs-lg);letter-spacing:-.01em}
+.c-pct{font-size:var(--fs-sm);font-weight:var(--fw-bold);color:var(--accent)}
+.c-daynav{display:flex;align-items:center;justify-content:center;gap:var(--s3);margin-top:var(--s3)}
+.c-arrow{
+  width:38px;height:38px;min-width:38px;border-radius:var(--r-md);border:none;cursor:pointer;
+  background:var(--surface);color:var(--accent);font-size:1.2rem;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;transition:background var(--dur-fast),transform var(--dur-fast);
+}
+.c-arrow:active{background:var(--surface-2);transform:scale(.94)}
+.c-arrow:disabled{opacity:.3;cursor:default}
+.c-daylabel{text-align:center;min-width:130px}
+.c-daylabel .m{font-weight:var(--fw-bold);font-size:1rem}
+.c-daylabel .s{font-size:var(--fs-xs);color:var(--text-muted)}
+
+/* Progress ring (canonical, data-driven via --pct) */
+.c-ring{
+  --pct:43;
+  width:108px;height:108px;border-radius:50%;display:grid;place-items:center;
+  background:
+    radial-gradient(closest-side,var(--bg) 79%,transparent 80% 100%),
+    conic-gradient(var(--accent) calc(var(--pct)*1%),var(--surface-2) 0);
+}
+.c-ring .inner{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.c-ring b{font-size:var(--fs-xl);font-weight:var(--fw-black);line-height:1;letter-spacing:-.02em}
+.c-ring b i{font-style:normal;opacity:.45;font-weight:var(--fw-bold)}
+.c-ring .cap{font-size:.58rem;color:var(--text-muted);margin-top:5px;text-transform:uppercase;letter-spacing:.14em}
+
+/* Group header */
+.c-ghead{
+  display:flex;align-items:center;gap:var(--s2);margin-bottom:var(--s3);
+  font-size:var(--fs-xs);font-weight:var(--fw-bold);text-transform:uppercase;
+  letter-spacing:var(--tracking-caps);color:var(--text-muted);
+}
+.c-ghead .gprog{margin-left:auto;color:var(--accent)}
+
+/* Exercise row */
+.c-list{list-style:none;display:flex;flex-direction:column;gap:var(--s2)}
+.c-row{
+  display:flex;align-items:center;gap:var(--s3);padding:13px var(--s4);
+  min-height:var(--tap-min);background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-md);cursor:pointer;user-select:none;-webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:background var(--dur-fast),border-color var(--dur-fast),transform var(--dur-fast);
+}
+.c-row:active{transform:scale(.99);background:var(--surface-2)}
+.c-row.done{background:var(--done-surface);border-color:var(--done-border)}
+.c-check{
+  width:30px;height:30px;min-width:30px;border-radius:var(--r-sm);
+  border:2px solid var(--border-strong);background:var(--bg);color:transparent;
+  display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;
+  transition:background var(--dur-fast),border-color var(--dur-fast),color var(--dur-fast);
+}
+.c-row.done .c-check{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.c-rinfo{display:flex;flex-direction:column;gap:1px}
+.c-rname{font-size:1rem;font-weight:var(--fw-medium)}
+.c-rdetail{font-size:var(--fs-sm);color:var(--text-muted)}
+
+/* Footer / version */
+.c-footer{text-align:center;padding:var(--s4);font-size:.66rem;letter-spacing:.06em;color:var(--text-faint)}
+
+/* Buttons (general, for future settings/actions) */
+.btn{
+  font:inherit;font-weight:var(--fw-bold);font-size:var(--fs-sm);cursor:pointer;
+  padding:11px 18px;border-radius:var(--r-md);border:1px solid var(--border);
+  background:var(--surface);color:var(--text);min-height:var(--tap-min);
+  transition:transform var(--dur-fast),background var(--dur-fast);
+}
+.btn:active{transform:scale(.97)}
+.btn--primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn--ghost{background:transparent}
+.btn--danger{background:transparent;color:var(--danger);border-color:#5e2420}
+
+/* future gamification chips */
+.g-streak{display:inline-flex;align-items:center;gap:5px;font-size:var(--fs-sm);font-weight:var(--fw-bold);
+  background:var(--accent-dim);color:var(--accent);padding:5px 11px;border-radius:var(--r-pill)}
+.g-badge{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:1.3rem;
+  background:var(--surface-2);border:1px solid var(--border)}
+.g-badge.earned{background:var(--accent-dim);border-color:var(--done-border)}
+.g-badge.locked{opacity:.4;filter:grayscale(1)}
+
+.callout{background:var(--accent-dim);border:1px solid var(--done-border);border-radius:var(--r-md);
+  padding:14px 16px;font-size:.86rem;margin-top:18px}
+.callout b{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <nav class="toc">
+    <div class="logo"><span class="dot"></span><b>Night Training</b></div>
+    <div class="grp">Foundations</div>
+    <a href="#principles">Principles</a>
+    <a href="#color">Color</a>
+    <a href="#type">Typography</a>
+    <a href="#space">Spacing &amp; Radius</a>
+    <a href="#elevation">Elevation &amp; Motion</a>
+    <div class="grp">Components</div>
+    <a href="#header">Header &amp; day nav</a>
+    <a href="#ring">Progress ring</a>
+    <a href="#groups">Group headers</a>
+    <a href="#rows">Exercise rows</a>
+    <a href="#buttons">Buttons</a>
+    <a href="#footer">Footer / version</a>
+    <div class="grp">Patterns</div>
+    <a href="#gamify">Gamification (future)</a>
+    <a href="#a11y">Accessibility</a>
+    <a href="#rules">Do &amp; Don't</a>
+  </nav>
+
+  <!-- ===================== CONTENT ===================== -->
+  <main class="content">
+    <header class="hero">
+      <div class="kicker">Soren Physio · Visual Style Guide</div>
+      <h1>Night Training</h1>
+      <p>The single reference for how the app looks and behaves. Build every new feature from these tokens and components and the app stays coherent — like one app made by one team, not a pile of screens. Tokens here map 1:1 to CSS custom properties intended for <code class="mono">:root</code> in <code class="mono">styles.css</code>.</p>
+    </header>
+
+    <!-- PRINCIPLES -->
+    <section id="principles">
+      <h2><span class="idx">01</span> Principles</h2>
+      <p class="lead">The feeling: a serious athlete's training app, not medical homework. Dark, focused, fast, and just a little bit cool.</p>
+      <div class="grid cols-2">
+        <div class="card">
+          <h3 style="margin-top:0">Dark first</h3>
+          <p style="color:var(--text-muted);font-size:.9rem">A near-black canvas keeps focus on the work and looks good at night when most reps happen. Content sits on subtly raised surfaces, separated by hairline borders rather than heavy shadows.</p>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">One loud accent</h3>
+          <p style="color:var(--text-muted);font-size:.9rem">Volt green means <em>done / progress / go</em>. It is the only saturated color on screen, so it always pulls the eye to what matters. If everything is accent, nothing is.</p>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">Big, honest targets</h3>
+          <p style="color:var(--text-muted);font-size:.9rem">Whole rows are tappable, never tiny checkboxes. Minimum 44px touch height. Feedback is instant and physical (a quick press-scale), because the user is moving, not sitting.</p>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">Quiet chrome</h3>
+          <p style="color:var(--text-muted);font-size:.9rem">Version numbers, hints, and meta text recede into <code class="mono">--text-faint</code>. The exercises and today's progress are the only things that shout.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- COLOR -->
+    <section id="color">
+      <h2><span class="idx">02</span> Color</h2>
+      <p class="lead">A tight, dark palette with exactly one accent. Don't introduce new hues per feature — extend with the reserved feedback colors or new neutral steps only.</p>
+
+      <h3>Surfaces &amp; neutrals</h3>
+      <div class="grid cols-3">
+        <div class="swatch"><div class="chip" style="background:#0b0f14"></div><div class="meta"><div class="name">Background</div><div class="var">--bg · #0b0f14</div><div class="use">App canvas</div></div></div>
+        <div class="swatch"><div class="chip" style="background:#141a22"></div><div class="meta"><div class="name">Surface</div><div class="var">--surface · #141a22</div><div class="use">Cards, rows</div></div></div>
+        <div class="swatch"><div class="chip" style="background:#1b2430"></div><div class="meta"><div class="name">Surface 2</div><div class="var">--surface-2 · #1b2430</div><div class="use">Tracks, inset</div></div></div>
+        <div class="swatch"><div class="chip" style="background:#1e2734"></div><div class="meta"><div class="name">Border</div><div class="var">--border · #1e2734</div><div class="use">Hairlines</div></div></div>
+        <div class="swatch"><div class="chip" style="background:#2b3543"></div><div class="meta"><div class="name">Border strong</div><div class="var">--border-strong · #2b3543</div><div class="use">Checkbox outline</div></div></div>
+      </div>
+
+      <h3>Accent &amp; state</h3>
+      <div class="grid cols-3">
+        <div class="swatch"><div class="chip" style="background:#c6ff3d"></div><div class="meta"><div class="name">Accent (volt)</div><div class="var">--accent · #c6ff3d</div><div class="use">Done, progress, go</div></div></div>
+        <div class="swatch"><div class="chip" style="background:#171f17"></div><div class="meta"><div class="name">Done surface</div><div class="var">--done-surface · #171f17</div><div class="use">Completed row bg</div></div></div>
+        <div class="swatch"><div class="chip" style="background:#3d5e1c"></div><div class="meta"><div class="name">Done border</div><div class="var">--done-border · #3d5e1c</div><div class="use">Completed row edge</div></div></div>
+      </div>
+
+      <h3>Text</h3>
+      <div class="grid cols-3">
+        <div class="swatch"><div class="chip" style="background:#e9eef5"></div><div class="meta"><div class="name">Text</div><div class="var">--text · #e9eef5</div><div class="use">Primary</div></div></div>
+        <div class="swatch"><div class="chip" style="background:#7b8696"></div><div class="meta"><div class="name">Text muted</div><div class="var">--text-muted · #7b8696</div><div class="use">Labels, details</div></div></div>
+        <div class="swatch"><div class="chip" style="background:#3f4a58"></div><div class="meta"><div class="name">Text faint</div><div class="var">--text-faint · #3f4a58</div><div class="use">Version, disabled</div></div></div>
+      </div>
+
+      <h3>Feedback (reserved — use only when the meaning fits)</h3>
+      <div class="grid cols-3">
+        <div class="swatch"><div class="chip" style="background:#ff5a4d"></div><div class="meta"><div class="name">Danger</div><div class="var">--danger · #ff5a4d</div><div class="use">Reset / destructive</div></div></div>
+        <div class="swatch"><div class="chip" style="background:#ffb03d"></div><div class="meta"><div class="name">Warning</div><div class="var">--warning · #ffb03d</div><div class="use">Caution, offline</div></div></div>
+      </div>
+    </section>
+
+    <!-- TYPOGRAPHY -->
+    <section id="type">
+      <h2><span class="idx">03</span> Typography</h2>
+      <p class="lead">System font stack only (zero network cost, native feel, no build step). Hierarchy comes from weight and size, not from many typefaces.</p>
+      <div class="card">
+        <div class="specimen"><div style="font-size:var(--fs-2xl);font-weight:800;letter-spacing:-.02em">2 day streak</div><div class="lbl">--fs-2xl 2.25rem / 800 — hero stats (future)</div></div>
+        <div class="specimen"><div style="font-size:var(--fs-xl);font-weight:800;letter-spacing:-.02em">3<span style="opacity:.45">/7</span></div><div class="lbl">--fs-xl 1.6rem / 800 — ring count</div></div>
+        <div class="specimen"><div style="font-size:var(--fs-lg);font-weight:800">Soren Physio</div><div class="lbl">--fs-lg 1.15rem / 800 — brand / screen title</div></div>
+        <div class="specimen"><div style="font-size:var(--fs-base);font-weight:600">Calf raises on foam roller</div><div class="lbl">--fs-base 1rem / 600 — exercise name (body)</div></div>
+        <div class="specimen"><div style="font-size:var(--fs-sm);color:var(--text-muted)">x6, 5 second hold</div><div class="lbl">--fs-sm 0.82rem / 400 — detail, sub-labels</div></div>
+        <div class="specimen"><div style="font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:var(--tracking-caps);color:var(--text-muted)">Morning · Stretches</div><div class="lbl">--fs-xs 0.72rem / 700 caps +.08em — group headers</div></div>
+      </div>
+      <div class="callout">Rule of thumb: <b>uppercase = structural label</b> (groups, section meta), <b>sentence case = content</b> (exercise names, messages). Never set body copy in uppercase.</div>
+    </section>
+
+    <!-- SPACING -->
+    <section id="space">
+      <h2><span class="idx">04</span> Spacing &amp; Radius</h2>
+      <p class="lead">A 4px base scale. Pick from the scale — never type arbitrary pixel values. Generous vertical rhythm; rows breathe.</p>
+      <h3>Spacing scale</h3>
+      <div class="card">
+        <table>
+          <tr><th>Token</th><th>px</th><th>Typical use</th><th style="width:40%">Scale</th></tr>
+          <tr><td><code>--s1</code></td><td>4</td><td>icon gaps, hairline nudges</td><td><div class="spacebar" style="width:4px"></div></td></tr>
+          <tr><td><code>--s2</code></td><td>8</td><td>gap between rows, chip padding</td><td><div class="spacebar" style="width:8px"></div></td></tr>
+          <tr><td><code>--s3</code></td><td>12</td><td>row inner gap, nav gap</td><td><div class="spacebar" style="width:12px"></div></td></tr>
+          <tr><td><code>--s4</code></td><td>16</td><td>screen padding, row padding-x</td><td><div class="spacebar" style="width:16px"></div></td></tr>
+          <tr><td><code>--s5</code></td><td>20</td><td>card padding</td><td><div class="spacebar" style="width:20px"></div></td></tr>
+          <tr><td><code>--s6</code></td><td>24</td><td>between groups</td><td><div class="spacebar" style="width:24px"></div></td></tr>
+          <tr><td><code>--s8</code></td><td>32</td><td>major section breaks</td><td><div class="spacebar" style="width:32px"></div></td></tr>
+        </table>
+      </div>
+      <h3>Radius</h3>
+      <div class="grid cols-3" style="margin-top:8px">
+        <div class="card" style="text-align:center"><div style="width:56px;height:56px;margin:0 auto 10px;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:9px"></div><div class="mono">--r-sm · 9px</div><div style="color:var(--text-muted);font-size:.8rem">checkbox</div></div>
+        <div class="card" style="text-align:center"><div style="width:56px;height:56px;margin:0 auto 10px;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:14px"></div><div class="mono">--r-md · 14px</div><div style="color:var(--text-muted);font-size:.8rem">rows, buttons</div></div>
+        <div class="card" style="text-align:center"><div style="width:56px;height:56px;margin:0 auto 10px;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:18px"></div><div class="mono">--r-lg · 18px</div><div style="color:var(--text-muted);font-size:.8rem">cards</div></div>
+      </div>
+    </section>
+
+    <!-- ELEVATION + MOTION -->
+    <section id="elevation">
+      <h2><span class="idx">05</span> Elevation &amp; Motion</h2>
+      <p class="lead">Dark UI separates layers with borders and faint shadows, not drop-shadow soup. Motion is quick and physical — confirm the tap, then get out of the way.</p>
+      <div class="grid cols-2">
+        <div class="card">
+          <h3 style="margin-top:0">Elevation</h3>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:6px">
+            <div style="flex:1;min-width:120px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:18px;box-shadow:var(--shadow-1)">--shadow-1<div style="font-size:.74rem;color:var(--text-muted)">resting cards</div></div>
+            <div style="flex:1;min-width:120px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:18px;box-shadow:var(--shadow-2)">--shadow-2<div style="font-size:.74rem;color:var(--text-muted)">floating / modal</div></div>
+          </div>
+          <div style="margin-top:14px;background:var(--surface);border-radius:var(--r-md);padding:18px;box-shadow:var(--glow-accent)">--glow-accent<div style="font-size:.74rem;color:var(--text-muted)">celebrate / earned only</div></div>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">Motion</h3>
+          <table>
+            <tr><th>Token</th><th>Value</th><th>Use</th></tr>
+            <tr><td><code>--dur-fast</code></td><td>120ms</td><td>taps, toggles, press-scale</td></tr>
+            <tr><td><code>--dur-med</code></td><td>200ms</td><td>day transitions, reveals</td></tr>
+            <tr><td><code>--ease</code></td><td class="mono">(.4,0,.2,1)</td><td>standard easing for all</td></tr>
+          </table>
+          <p style="color:var(--text-muted);font-size:.85rem;margin-top:12px">Press feedback = <code class="mono">transform:scale(.97–.99)</code>. Honor <code class="mono">prefers-reduced-motion</code>: drop transforms, keep color changes.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- HEADER -->
+    <section id="header">
+      <h2><span class="idx">06</span> Header &amp; day nav</h2>
+      <p class="lead">Brand left, today's progress right, day stepper centered below. Sits flat on the background — no colored header bar.</p>
+      <div class="demo-surface">
+        <div class="c-header" style="padding-left:0;padding-right:0">
+          <div class="c-brandrow"><span class="c-brand">Soren Physio</span><span class="c-pct">43%</span></div>
+          <div class="c-daynav">
+            <button class="c-arrow">‹</button>
+            <div class="c-daylabel"><div class="m">Today</div><div class="s">Sun, May 31</div></div>
+            <button class="c-arrow" disabled>›</button>
+          </div>
+        </div>
+      </div>
+      <div class="pillrow">
+        <span class="pill">Future days disabled (opacity .3)</span>
+        <span class="pill">Swipe left/right also steps days</span>
+        <span class="pill">Label: Today / Yesterday / full date</span>
+      </div>
+    </section>
+
+    <!-- RING -->
+    <section id="ring">
+      <h2><span class="idx">07</span> Progress ring</h2>
+      <p class="lead">The hero of the home screen — a daily target to close. Data-driven: set <code class="mono">--pct</code> (0–100) and the arc fills. This is also the natural anchor for streaks later.</p>
+      <div class="demo-surface" style="display:flex;gap:36px;align-items:center;flex-wrap:wrap;justify-content:center">
+        <div style="text-align:center"><div class="c-ring" style="--pct:0"><div class="inner"><b>0<i>/7</i></b><span class="cap">done</span></div></div><div class="mono" style="margin-top:8px">--pct:0</div></div>
+        <div style="text-align:center"><div class="c-ring" style="--pct:43"><div class="inner"><b>3<i>/7</i></b><span class="cap">done</span></div></div><div class="mono" style="margin-top:8px">--pct:43</div></div>
+        <div style="text-align:center"><div class="c-ring" style="--pct:100"><div class="inner"><b style="color:var(--accent)">7<i style="opacity:.6">/7</i></b><span class="cap" style="color:var(--accent)">done</span></div></div><div class="mono" style="margin-top:8px">--pct:100 ✓</div></div>
+      </div>
+      <div class="callout">At <b>100%</b> the count flips to the accent color and the ring can pulse once with <code class="mono">--glow-accent</code>. That moment of completion is the only place we "celebrate" today — and it's the seed for streaks in the gamification pass.</div>
+    </section>
+
+    <!-- GROUPS -->
+    <section id="groups">
+      <h2><span class="idx">08</span> Group headers</h2>
+      <p class="lead">Uppercase, muted, with the time and category separated by a middot, and per-group progress pushed to the right in accent.</p>
+      <div class="demo-surface">
+        <div class="c-ghead"><span>Morning · Stretches</span><span class="gprog">2/3</span></div>
+        <div style="height:10px"></div>
+        <div class="c-ghead"><span>Evening · Exercise</span><span class="gprog">0/1</span></div>
+      </div>
+    </section>
+
+    <!-- ROWS -->
+    <section id="rows">
+      <h2><span class="idx">09</span> Exercise rows</h2>
+      <p class="lead">The core interaction. The whole row is the tap target. Three states below — keep them visually distinct but calm.</p>
+      <div class="demo-surface">
+        <ul class="c-list">
+          <li class="c-row"><span class="c-check"></span><span class="c-rinfo"><span class="c-rname">Hamstring stretches</span></span></li>
+          <li class="c-row done"><span class="c-check">✓</span><span class="c-rinfo"><span class="c-rname">Quad stretches</span></span></li>
+          <li class="c-row"><span class="c-check"></span><span class="c-rinfo"><span class="c-rname">Calf raises on foam roller</span><span class="c-rdetail">x6, 5 second hold</span></span></li>
+        </ul>
+      </div>
+      <div class="grid cols-3" style="margin-top:14px">
+        <div class="card"><h3 style="margin-top:0">Default</h3><p style="color:var(--text-muted);font-size:.85rem">Surface bg, hairline border, hollow checkbox with strong outline.</p></div>
+        <div class="card"><h3 style="margin-top:0">Done</h3><p style="color:var(--text-muted);font-size:.85rem">Green-tinted surface + border, filled accent checkbox with ink-colored check.</p></div>
+        <div class="card"><h3 style="margin-top:0">Pressed</h3><p style="color:var(--text-muted);font-size:.85rem"><code class="mono">scale(.99)</code> + surface-2 bg for 120ms. Optimistic — toggles immediately.</p></div>
+      </div>
+    </section>
+
+    <!-- BUTTONS -->
+    <section id="buttons">
+      <h2><span class="idx">10</span> Buttons</h2>
+      <p class="lead">Mostly absent today (the app is tap-the-row), but defined now so future settings/actions are consistent.</p>
+      <div class="demo-surface" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+        <button class="btn btn--primary">Primary</button>
+        <button class="btn">Secondary</button>
+        <button class="btn btn--ghost">Ghost</button>
+        <button class="btn btn--danger">Reset day</button>
+      </div>
+      <div class="pillrow">
+        <span class="pill">Primary = accent, used once per screen max</span>
+        <span class="pill">Danger = outline only, never filled red</span>
+        <span class="pill">min-height 44px</span>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <section id="footer">
+      <h2><span class="idx">11</span> Footer &amp; version</h2>
+      <p class="lead">The version lives here and only here: centered, faint, tiny, at the very bottom of the scroll. It must never compete with content. (Per project rule, this string and <code class="mono">CACHE_VERSION</code> bump together.)</p>
+      <div class="demo-surface" style="background:var(--bg)">
+        <div class="c-footer">v0.2.0</div>
+      </div>
+    </section>
+
+    <!-- GAMIFICATION -->
+    <section id="gamify">
+      <h2><span class="idx">12</span> Gamification — reserved patterns</h2>
+      <p class="lead">Not built yet. Pre-defined here so when we add it, it drops into existing space and uses existing tokens — no redesign. All of it reads in the one accent + neutrals.</p>
+      <div class="grid cols-2">
+        <div class="card">
+          <h3 style="margin-top:0">Streak chip</h3>
+          <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:12px">Lives top-right in the header (where <code class="mono">--pct</code> sits now, or beside it).</p>
+          <span class="g-streak">🔥 5 day streak</span>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">Badges</h3>
+          <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:12px">Earned = accent tint; locked = greyed. Square 14px-radius tiles.</p>
+          <div style="display:flex;gap:10px">
+            <div class="g-badge earned">🏆</div>
+            <div class="g-badge earned">⚡</div>
+            <div class="g-badge locked">🔒</div>
+            <div class="g-badge locked">🔒</div>
+          </div>
+        </div>
+      </div>
+      <div class="callout">Anchor everything to the <b>ring</b> and the <b>streak chip</b>. Closing the ring → streak +1; the ring's 100% glow is the celebration. Keep points/levels optional and quiet — the user is 14 and sporty, motivated by consistency, not confetti spam.</div>
+    </section>
+
+    <!-- A11Y -->
+    <section id="a11y">
+      <h2><span class="idx">13</span> Accessibility</h2>
+      <div class="grid cols-2">
+        <div class="card">
+          <h3 style="margin-top:0">Contrast &amp; targets</h3>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;color:var(--text-muted);font-size:.88rem">
+            <li>Body text (<code class="mono">--text</code> on <code class="mono">--bg</code>) ≥ 13:1.</li>
+            <li>Muted text used only for non-essential labels.</li>
+            <li>Every interactive element ≥ 44×44px.</li>
+            <li>Don't rely on color alone — the ✓ glyph also signals done.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">Behavior</h3>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;color:var(--text-muted);font-size:.88rem">
+            <li>Respect <code class="mono">prefers-reduced-motion</code>.</li>
+            <li>Buttons/rows get <code class="mono">aria-label</code>s &amp; pressed state.</li>
+            <li><code class="mono">theme-color</code> meta = <code class="mono">--bg</code> (#0b0f14).</li>
+            <li>Focus-visible ring in accent for keyboard users.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- RULES -->
+    <section id="rules">
+      <h2><span class="idx">14</span> Do &amp; Don't</h2>
+      <div class="dd">
+        <div class="do">
+          <h4>Do</h4>
+          <ul>
+            <li>Reach for an existing token before inventing a value.</li>
+            <li>Keep accent rare — done, progress, one primary action.</li>
+            <li>Make the whole row/card tappable.</li>
+            <li>Let chrome (version, hints) stay faint.</li>
+            <li>Bump footer version + CACHE_VERSION together.</li>
+          </ul>
+        </div>
+        <div class="dont">
+          <h4>Don't</h4>
+          <ul>
+            <li>Add new brand hues per feature.</li>
+            <li>Use a colored header bar (we went flat/dark).</li>
+            <li>Paint large areas in accent green.</li>
+            <li>Set body copy in uppercase.</li>
+            <li>Use drop shadows to fake hierarchy — use borders.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:22px">This guide is the spec for <code class="mono">styles.css</code>. When I implement Night Training in the live app, the <code class="mono">:root</code> token block above ships as-is, and each component's CSS comes straight from the <span style="color:var(--accent)">Components</span> section here.</div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

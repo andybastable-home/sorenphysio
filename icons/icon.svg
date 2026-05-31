@@ -1,7 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Full background for maskable safe zone -->
-  <rect width="512" height="512" fill="#2a6db5"/>
-  <!-- Checkmark circle (content within safe zone: ~102–410px) -->
-  <circle cx="256" cy="256" r="150" fill="none" stroke="white" stroke-width="28"/>
-  <polyline points="178,256 230,310 334,196" stroke="white" stroke-width="34" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Night Training app icon: volt progress ring + check on a dark canvas. -->
+  <!-- Full-bleed background covers the maskable safe zone. -->
+  <rect width="512" height="512" fill="#0b0f14"/>
+  <!-- Ring sits inside the safe zone: r=150, stroke 30 => outer radius 165 (92..420px). -->
+  <g transform="rotate(-90 256 256)">
+    <!-- Track (remaining) -->
+    <circle cx="256" cy="256" r="150" fill="none" stroke="#1b2430" stroke-width="30"/>
+    <!-- Progress arc: ~75% filled, volt accent, rounded ends -->
+    <circle cx="256" cy="256" r="150" fill="none" stroke="#c6ff3d" stroke-width="30"
+            stroke-linecap="round" stroke-dasharray="706.86 942.48"/>
+  </g>
+  <!-- Centered checkmark in the volt accent -->
+  <polyline points="190,258 236,304 330,196" fill="none" stroke="#c6ff3d"
+            stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

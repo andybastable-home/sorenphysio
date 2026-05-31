@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Soren Physio — Design Directions</title>
+<style>
+/* ============================================================
+   PROPOSAL PAGE CHROME (not part of the app — just the gallery)
+   ============================================================ */
+:root{
+  --page-bg:#0e1116;
+  --page-fg:#e6e9ef;
+  --muted:#8b94a3;
+  --panel:#161b22;
+  --line:#232a34;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, #1b2330 0%, transparent 60%),
+    var(--page-bg);
+  color:var(--page-fg);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  padding:48px 24px 96px;
+}
+.wrap{max-width:1180px;margin:0 auto}
+
+.page-head{margin-bottom:8px}
+.kicker{
+  text-transform:uppercase;letter-spacing:.22em;font-size:.72rem;
+  color:var(--muted);font-weight:700;
+}
+.page-head h1{font-size:2.1rem;font-weight:800;letter-spacing:-.02em;margin:.25rem 0 .5rem}
+.page-head p{color:var(--muted);max-width:64ch;font-size:1.02rem}
+.brief{
+  display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 56px;
+}
+.brief span{
+  font-size:.8rem;background:var(--panel);border:1px solid var(--line);
+  padding:6px 12px;border-radius:999px;color:#c7cdd8;
+}
+.brief span b{color:#fff;font-weight:700}
+
+/* Direction block */
+.dir{
+  display:grid;grid-template-columns:340px 1fr;gap:48px;align-items:start;
+  padding:48px 0;border-top:1px solid var(--line);
+}
+.dir:first-of-type{border-top:none}
+@media(max-width:880px){.dir{grid-template-columns:1fr;gap:28px}}
+
+.dir-info .num{
+  font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--muted);font-weight:700;
+}
+.dir-info h2{font-size:1.55rem;font-weight:800;letter-spacing:-.01em;margin:.2rem 0 .1rem}
+.dir-info .tag{color:var(--muted);font-size:.95rem;margin-bottom:1.1rem}
+.dir-info p{font-size:.92rem;color:#bcc3cf;margin-bottom:1.1rem}
+.dir-info ul{list-style:none;font-size:.86rem;color:#aab2bf}
+.dir-info li{padding:5px 0 5px 20px;position:relative}
+.dir-info li::before{content:"";position:absolute;left:2px;top:12px;width:7px;height:7px;border-radius:2px;background:var(--swatch,#5b8def)}
+.swatches{display:flex;gap:8px;margin:14px 0 4px}
+.sw{width:30px;height:30px;border-radius:8px;border:1px solid rgba(255,255,255,.12)}
+
+.stage{display:flex;justify-content:center}
+
+/* ============================================================
+   PHONE FRAME
+   ============================================================ */
+.phone{
+  width:340px;height:710px;border-radius:42px;
+  background:#000;padding:11px;
+  box-shadow:0 0 0 2px #2a313c, 0 30px 60px -20px rgba(0,0,0,.8);
+  position:relative;flex-shrink:0;
+}
+.phone::before{ /* notch */
+  content:"";position:absolute;top:18px;left:50%;transform:translateX(-50%);
+  width:120px;height:26px;background:#000;border-radius:0 0 16px 16px;z-index:30;
+}
+.screen{
+  width:100%;height:100%;border-radius:32px;overflow:hidden;position:relative;
+  display:flex;flex-direction:column;
+}
+.screen .scroll{flex:1;overflow:hidden}
+.statusbar{
+  height:30px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 22px;font-size:.72rem;font-weight:600;flex-shrink:0;
+}
+
+/* shared app primitives, themed per direction via the .theme-* scope */
+.app-header{flex-shrink:0}
+.brand{display:flex;align-items:center;justify-content:space-between}
+.daynav{display:flex;align-items:center;justify-content:center;gap:10px}
+.daynav .arrow{
+  width:34px;height:34px;border-radius:10px;display:flex;align-items:center;
+  justify-content:center;font-size:1.2rem;border:none;cursor:pointer;
+}
+.daynav .arrow.off{opacity:.3}
+.daylabel{text-align:center;min-width:120px}
+.daylabel .m{font-weight:700;font-size:1rem}
+.daylabel .s{font-size:.72rem;opacity:.7}
+
+.body{padding:16px 16px 8px;flex:1}
+.group{margin-bottom:18px}
+.ghead{
+  display:flex;align-items:center;gap:8px;margin-bottom:10px;
+  font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+}
+.gprog{margin-left:auto;font-weight:700}
+.list{list-style:none}
+.row{
+  display:flex;align-items:center;gap:12px;padding:13px 14px;margin-bottom:9px;
+  border-radius:14px;
+}
+.check{
+  width:30px;height:30px;min-width:30px;border-radius:9px;display:flex;
+  align-items:center;justify-content:center;font-size:1rem;font-weight:700;
+}
+.rinfo{display:flex;flex-direction:column;gap:1px}
+.rname{font-size:.98rem;font-weight:600}
+.rdetail{font-size:.78rem;opacity:.7}
+.appfooter{
+  flex-shrink:0;text-align:center;padding:10px;font-size:.66rem;letter-spacing:.04em;
+}
+
+/* ------------------------------------------------------------
+   DIRECTION 1 — "COURTSIDE"  (light, energetic, team colors)
+   ------------------------------------------------------------ */
+.theme-court{background:#f4f6fa;color:#10151c}
+.theme-court .statusbar{color:#10151c}
+.theme-court .app-header{
+  background:linear-gradient(135deg,#ff5a1f,#ff8a3d);color:#fff;
+  padding:6px 18px 16px;border-radius:0 0 22px 22px;
+}
+.theme-court .brand b{font-weight:800;font-size:1.15rem;letter-spacing:-.01em}
+.theme-court .brand .pct{
+  font-size:.78rem;font-weight:700;background:rgba(255,255,255,.22);
+  padding:4px 10px;border-radius:999px;
+}
+.theme-court .daynav{margin-top:12px}
+.theme-court .daynav .arrow{background:rgba(255,255,255,.22);color:#fff}
+.theme-court .progbar{height:6px;border-radius:999px;background:#e4e8ef;margin:0 0 18px;overflow:hidden}
+.theme-court .progbar i{display:block;height:100%;width:43%;background:linear-gradient(90deg,#ff5a1f,#ffb03d);border-radius:999px}
+.theme-court .ghead{color:#ff5a1f}
+.theme-court .ghead .gprog{color:#9aa3b1}
+.theme-court .row{background:#fff;box-shadow:0 2px 6px rgba(16,21,28,.05)}
+.theme-court .check{background:#eef1f6;color:transparent;border:2px solid #dfe4ec}
+.theme-court .row.done{background:#fff6ee}
+.theme-court .row.done .check{background:#ff5a1f;color:#fff;border-color:#ff5a1f}
+.theme-court .row.done .rname{color:#10151c}
+.theme-court .appfooter{color:#aeb6c2}
+
+/* ------------------------------------------------------------
+   DIRECTION 2 — "NIGHT TRAINING"  (dark, volt accent, athletic)
+   ------------------------------------------------------------ */
+.theme-night{background:#0b0f14;color:#e9eef5}
+.theme-night .statusbar{color:#e9eef5}
+.theme-night .app-header{padding:8px 18px 16px;background:#0b0f14}
+.theme-night .brand b{font-weight:800;font-size:1.1rem}
+.theme-night .brand .pct{font-size:.78rem;font-weight:700;color:#c6ff3d}
+.theme-night .daynav{margin-top:14px}
+.theme-night .daynav .arrow{background:#161d27;color:#c6ff3d}
+.theme-night .daylabel .s{color:#7b8696;}
+.theme-night .ring-wrap{display:flex;justify-content:center;margin:6px 0 20px}
+.theme-night .ring{
+  width:104px;height:104px;border-radius:50%;display:grid;place-items:center;
+  background:
+    radial-gradient(closest-side,#0b0f14 79%,transparent 80% 100%),
+    conic-gradient(#c6ff3d 43%,#1b2430 0);
+}
+.theme-night .ring .inner{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.theme-night .ring b{font-size:1.6rem;font-weight:800;color:#fff;line-height:1;letter-spacing:-.02em}
+.theme-night .ring span{font-size:.58rem;color:#7b8696;margin-top:4px;text-align:center;text-transform:uppercase;letter-spacing:.12em}
+.theme-night .ghead{color:#7b8696}
+.theme-night .ghead .gprog{color:#c6ff3d}
+.theme-night .row{background:#141a22;border:1px solid #1e2734}
+.theme-night .check{background:#0b0f14;color:transparent;border:2px solid #2b3543}
+.theme-night .row.done{background:#171f17;border-color:#3d5e1c}
+.theme-night .row.done .check{background:#c6ff3d;color:#0b0f14;border-color:#c6ff3d}
+.theme-night .rdetail{color:#7b8696}
+.theme-night .appfooter{color:#3f4a58}
+
+/* ------------------------------------------------------------
+   DIRECTION 3 — "POWER UP"  (playful, gamification-ready)
+   ------------------------------------------------------------ */
+.theme-power{background:#101a2e;color:#eef3ff}
+.theme-power .statusbar{color:#eef3ff}
+.theme-power .app-header{
+  padding:8px 18px 18px;
+  background:linear-gradient(135deg,#3b2bd1,#6d3bff 60%,#b13bff);
+  border-radius:0 0 26px 26px;color:#fff;
+}
+.theme-power .brand b{font-weight:800;font-size:1.12rem}
+.theme-power .streak{
+  display:inline-flex;align-items:center;gap:4px;font-size:.78rem;font-weight:700;
+  background:rgba(255,255,255,.16);padding:4px 10px;border-radius:999px;
+}
+.theme-power .daynav{margin-top:14px}
+.theme-power .daynav .arrow{background:rgba(255,255,255,.18);color:#fff}
+.theme-power .xpcard{
+  margin:-30px 14px 18px;background:#1a2440;
+  border:1px solid #2c3a63;border-radius:18px;padding:14px 16px;
+  box-shadow:0 12px 30px -12px rgba(109,59,255,.55);
+}
+.theme-power .xpcard .lvl{display:flex;justify-content:space-between;font-size:.78rem;font-weight:700;color:#c3ccff;margin-bottom:8px}
+.theme-power .xpbar{height:10px;border-radius:999px;background:#0f1730;overflow:hidden}
+.theme-power .xpbar i{display:block;height:100%;width:43%;background:linear-gradient(90deg,#ffd23b,#ff7ad9);border-radius:999px}
+.theme-power .body{padding-top:0}
+.theme-power .ghead{color:#9fb0ff}
+.theme-power .ghead .gprog{color:#ffd23b}
+.theme-power .row{background:#1a2440;border:1px solid #2c3a63}
+.theme-power .check{background:#0f1730;color:transparent;border:2px solid #38477a}
+.theme-power .row.done{background:#21306b;border-color:#6d3bff}
+.theme-power .row.done .check{background:linear-gradient(135deg,#ffd23b,#ff7ad9);color:#101a2e}
+.theme-power .rdetail{color:#8d9bd0}
+.theme-power .appfooter{color:#46568c}
+
+.note{font-size:.8rem;color:var(--muted);margin-top:22px;max-width:60ch}
+.foot{margin-top:64px;padding-top:24px;border-top:1px solid var(--line);color:var(--muted);font-size:.82rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="kicker">Soren Physio · Visual Design Directions</div>
+    <h1>Three ways the app could look</h1>
+    <p>Same screens, same data, same tap-to-complete flow you're using now — just different visual personalities. Each is shown on a phone with Soren's real exercises so the comparison is honest. Pick one (or mix), and I'll build it into the live app.</p>
+  </div>
+
+  <div class="brief">
+    <span>Audience: <b>14yo, sporty</b></span>
+    <span>Frisbee · basketball · football</span>
+    <span>Gamification: <b>later, not now</b></span>
+    <span>Version number: <b>subtle, bottom</b></span>
+    <span>No build step · stays vanilla</span>
+  </div>
+
+  <!-- ============================= DIRECTION 1 ============================= -->
+  <section class="dir">
+    <div class="dir-info" style="--swatch:#ff5a1f">
+      <div class="num">Direction 01</div>
+      <h2>Courtside</h2>
+      <div class="tag">Bright, energetic, daytime</div>
+      <p>A clean light theme with a bold sports-orange header and a slim progress bar. Feels like a modern fitness app — friendly and high-energy without being childish. Easiest, most legible read in daylight.</p>
+      <ul>
+        <li>Warm orange = effort / energy</li>
+        <li>White cards, soft shadows, big tap targets</li>
+        <li>Thin progress bar instead of a number</li>
+        <li>Safe, broadly appealing, low-risk</li>
+      </ul>
+      <div class="swatches">
+        <div class="sw" style="background:#ff5a1f"></div>
+        <div class="sw" style="background:#ffb03d"></div>
+        <div class="sw" style="background:#10151c"></div>
+        <div class="sw" style="background:#f4f6fa"></div>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="phone"><div class="screen theme-court">
+        <div class="statusbar"><span>9:41</span><span>● ▮▮▮</span></div>
+        <div class="scroll">
+          <div class="app-header">
+            <div class="brand"><b>Soren Physio</b><span class="pct">3 / 7</span></div>
+            <div class="daynav">
+              <button class="arrow">‹</button>
+              <div class="daylabel"><div class="m">Today</div><div class="s">Sun, May 31</div></div>
+              <button class="arrow off">›</button>
+            </div>
+          </div>
+          <div class="body">
+            <div class="progbar"><i></i></div>
+            <div class="group">
+              <div class="ghead"><span>Morning › Stretches</span><span class="gprog">2/3</span></div>
+              <ul class="list">
+                <li class="row done"><span class="check">✓</span><span class="rinfo"><span class="rname">Quad stretches</span></span></li>
+                <li class="row done"><span class="check">✓</span><span class="rinfo"><span class="rname">Hamstring stretches</span></span></li>
+                <li class="row"><span class="check"></span><span class="rinfo"><span class="rname">Calf stretches</span></span></li>
+              </ul>
+            </div>
+            <div class="group">
+              <div class="ghead"><span>Evening › Stretches</span><span class="gprog">1/3</span></div>
+              <ul class="list">
+                <li class="row done"><span class="check">✓</span><span class="rinfo"><span class="rname">Quad stretches</span></span></li>
+                <li class="row"><span class="check"></span><span class="rinfo"><span class="rname">Hamstring stretches</span></span></li>
+                <li class="row"><span class="check"></span><span class="rinfo"><span class="rname">Calf stretches</span></span></li>
+              </ul>
+            </div>
+            <div class="group">
+              <div class="ghead"><span>Evening › Exercise</span><span class="gprog">0/1</span></div>
+              <ul class="list">
+                <li class="row"><span class="check"></span><span class="rinfo"><span class="rname">Calf raises on foam roller</span><span class="rdetail">x6, 5 second hold</span></span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="appfooter">v0.2.0</div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ============================= DIRECTION 2 ============================= -->
+  <section class="dir">
+    <div class="dir-info" style="--swatch:#c6ff3d">
+      <div class="num">Direction 02</div>
+      <h2>Night Training</h2>
+      <div class="tag">Dark, athletic, "performance app"</div>
+      <p>The Strava / Nike Training vibe teenagers actually associate with sport. Dark UI, a single electric-volt accent, and a progress ring up top that reads as a daily target to close. Looks serious and a bit cool — less "medical homework".</p>
+      <ul>
+        <li>Dark canvas, one punchy accent</li>
+        <li>Progress <b>ring</b> = a goal to close each day</li>
+        <li>Great battery/OLED + easy on the eyes at night</li>
+        <li>Naturally leads into streaks later</li>
+      </ul>
+      <div class="swatches">
+        <div class="sw" style="background:#c6ff3d"></div>
+        <div class="sw" style="background:#0b0f14"></div>
+        <div class="sw" style="background:#141a22"></div>
+        <div class="sw" style="background:#e9eef5"></div>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="phone"><div class="screen theme-night">
+        <div class="statusbar"><span>9:41</span><span>● ▮▮▮</span></div>
+        <div class="scroll">
+          <div class="app-header">
+            <div class="brand"><b>Soren Physio</b><span class="pct">43%</span></div>
+            <div class="daynav">
+              <button class="arrow">‹</button>
+              <div class="daylabel"><div class="m">Today</div><div class="s">Sun, May 31</div></div>
+              <button class="arrow off">›</button>
+            </div>
+          </div>
+          <div class="ring-wrap">
+            <div class="ring"><div class="inner"><b>3<span style="opacity:.45;font-weight:700">/7</span></b><span>done</span></div></div>
+          </div>
+          <div class="body" style="padding-top:0">
+            <div class="group">
+              <div class="ghead"><span>Morning · Stretches</span><span class="gprog">2/3</span></div>
+              <ul class="list">
+                <li class="row done"><span class="check">✓</span><span class="rinfo"><span class="rname">Quad stretches</span></span></li>
+                <li class="row done"><span class="check">✓</span><span class="rinfo"><span class="rname">Hamstring stretches</span></span></li>
+                <li class="row"><span class="check"></span><span class="rinfo"><span class="rname">Calf stretches</span></span></li>
+              </ul>
+            </div>
+            <div class="group">
+              <div class="ghead"><span>Evening · Stretches</span><span class="gprog">1/3</span></div>
+              <ul class="list">
+                <li class="row done"><span class="check">✓</span><span class="rinfo"><span class="rname">Quad stretches</span></span></li>
+                <li class="row"><span class="check"></span><span class="rinfo"><span class="rname">Hamstring stretches</span></span></li>
+                <li class="row"><span class="check"></span><span class="rinfo"><span class="rname">Calf stretches</span></span></li>
+              </ul>
+            </div>
+            <div class="group">
+              <div class="ghead"><span>Evening · Exercise</span><span class="gprog">0/1</span></div>
+              <ul class="list">
+                <li class="row"><span class="check"></span><span class="rinfo"><span class="rname">Calf raises on foam roller</span><span class="rdetail">x6, 5 second hold</span></span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="appfooter">v0.2.0</div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ============================= DIRECTION 3 ============================= -->
+  <section class="dir">
+    <div class="dir-info" style="--swatch:#6d3bff">
+      <div class="num">Direction 03</div>
+      <h2>Power Up</h2>
+      <div class="tag">Playful, ready to gamify</div>
+      <p>The most fun and the most future-proof. A vibrant purple gradient and an XP-style bar up top. We <b>don't</b> turn on streaks/points now, but the layout already has a home for them, so adding gamification later is a flip of a switch, not a redesign.</p>
+      <ul>
+        <li>Bold gradient, arcade energy</li>
+        <li>XP bar is decorative now → functional later</li>
+        <li>Reserved slots for streak / level</li>
+        <li>Highest "want to open it" factor</li>
+      </ul>
+      <div class="swatches">
+        <div class="sw" style="background:#6d3bff"></div>
+        <div class="sw" style="background:#ffd23b"></div>
+        <div class="sw" style="background:#ff7ad9"></div>
+        <div class="sw" style="background:#101a2e"></div>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="phone"><div class="screen theme-power">
+        <div class="statusbar"><span>9:41</span><span>● ▮▮▮</span></div>
+        <div class="scroll">
+          <div class="app-header">
+            <div class="brand"><b>Soren Physio</b><span class="streak">🔥 5</span></div>
+            <div class="daynav">
+              <button class="arrow">‹</button>
+              <div class="daylabel"><div class="m">Today</div><div class="s">Sun, May 31</div></div>
+              <button class="arrow off">›</button>
+            </div>
+          </div>
+          <div class="xpcard">
+            <div class="lvl"><span>Level 4</span><span>3 / 7 today</span></div>
+            <div class="xpbar"><i></i></div>
+          </div>
+          <div class="body">
+            <div class="group">
+              <div class="ghead"><span>Morning · Stretches</span><span class="gprog">2/3</span></div>
+              <ul class="list">
+                <li class="row done"><span class="check">✓</span><span class="rinfo"><span class="rname">Quad stretches</span></span></li>
+                <li class="row done"><span class="check">✓</span><span class="rinfo"><span class="rname">Hamstring stretches</span></span></li>
+                <li class="row"><span class="check"></span><span class="rinfo"><span class="rname">Calf stretches</span></span></li>
+              </ul>
+            </div>
+            <div class="group">
+              <div class="ghead"><span>Evening · Stretches</span><span class="gprog">1/3</span></div>
+              <ul class="list">
+                <li class="row done"><span class="check">✓</span><span class="rinfo"><span class="rname">Quad stretches</span></span></li>
+                <li class="row"><span class="check"></span><span class="rinfo"><span class="rname">Hamstring stretches</span></span></li>
+                <li class="row"><span class="check"></span><span class="rinfo"><span class="rname">Calf stretches</span></span></li>
+              </ul>
+            </div>
+            <div class="group">
+              <div class="ghead"><span>Evening · Exercise</span><span class="gprog">0/1</span></div>
+              <ul class="list">
+                <li class="row"><span class="check"></span><span class="rinfo"><span class="rname">Calf raises on foam roller</span><span class="rdetail">x6, 5 second hold</span></span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="appfooter">v0.2.0</div>
+      </div></div>
+    </div>
+  </section>
+
+  <div class="foot">
+    <b>My recommendation:</b> <b>Night Training</b> for now — it reads as a real athlete's app (the look a 14yo wants to be seen using), keeps the version number quiet at the bottom, and the progress ring is a natural runway into streaks when you add gamification. <b>Power Up</b> is the pick if you'd rather lean into the game feel from day one.<br><br>
+    Tell me which direction (or which bits of each), and I'll implement it in <code>styles.css</code> / <code>index.html</code> while keeping the no-build, Dexie-only architecture intact.
+  </div>
+
+</div>
+</body>
+</html>
