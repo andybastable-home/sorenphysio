@@ -1,0 +1,128 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: system-ui, sans-serif;
+  background: #f5f5f5;
+  color: #222;
+}
+
+.app-header {
+  background: #2a6db5;
+  color: #fff;
+  padding: 1rem 1.25rem;
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+#main {
+  padding: 1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.day-summary {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  color: #555;
+  font-weight: 600;
+}
+
+.group {
+  margin-bottom: 1.5rem;
+}
+
+.group-header {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+}
+
+.group-time::after {
+  content: '›';
+  margin-left: 0.35em;
+}
+
+.group-progress {
+  margin-left: auto;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.exercise-list {
+  list-style: none;
+}
+
+.exercise-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: #fff;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: background 0.12s, border-color 0.12s;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.exercise-row:active {
+  background: #eef3ff;
+}
+
+.exercise-row.done {
+  background: #f0faf0;
+  border-color: #4caf50;
+}
+
+.checkbox {
+  width: 2.25rem;
+  height: 2.25rem;
+  min-width: 2.25rem;
+  border: 2px solid #bbb;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: #fff;
+  background: #fff;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+.exercise-row.done .checkbox {
+  border-color: #4caf50;
+  background: #4caf50;
+}
+
+.exercise-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.exercise-name {
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.exercise-detail {
+  font-size: 0.85rem;
+  color: #777;
+}
+
+.app-footer {
+  text-align: center;
+  padding: 1.5rem;
+  color: #bbb;
+  font-size: 0.75rem;
+}
