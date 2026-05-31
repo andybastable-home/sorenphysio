@@ -1,0 +1,25 @@
+{
+  "name": "Soren Physio",
+  "short_name": "Physio",
+  "description": "Soren's daily physio exercise checklist.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#2a6db5",
+  "theme_color": "#2a6db5",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

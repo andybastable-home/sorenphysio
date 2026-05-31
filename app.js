@@ -1,4 +1,22 @@
 // ------------------------------------------------------------------
+// Service worker
+// ------------------------------------------------------------------
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch((err) => {
+      console.error('Service worker registration failed', err);
+    });
+  });
+
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloading) return;
+    reloading = true;
+    window.location.reload();
+  });
+}
+
+// ------------------------------------------------------------------
 // Database
 // ------------------------------------------------------------------
 const db = new Dexie('SorenPhysio');
@@ -99,9 +117,29 @@ async function toggleExercise(exerciseId, currentDone) {
 }
 
 // ------------------------------------------------------------------
+// Day navigation
+// ------------------------------------------------------------------
+function setDate(date) {
+  const today = startOfDay(new Date());
+  if (date > today) return; // block future dates
+  currentDate = startOfDay(date);
+  render();
+}
+
+// ------------------------------------------------------------------
 // Render
 // ------------------------------------------------------------------
 async function render() {
+  const today = startOfDay(new Date());
+  const label = formatDateLabel(currentDate);
+
+  const mainLabel = document.getElementById('day-label-main');
+  const subLabel = document.getElementById('day-label-sub');
+  const btnNext = document.getElementById('btn-next');
+  if (mainLabel) mainLabel.textContent = label.main;
+  if (subLabel) subLabel.textContent = label.sub;
+  if (btnNext) btnNext.disabled = isSameDay(currentDate, today);
+
   const main = document.getElementById('main');
   const completions = await loadCompletions(currentDate);
 
@@ -130,7 +168,7 @@ async function render() {
     for (const ex of group.items) {
       const done = completions.get(ex.id) === true;
       html += `<li class="exercise-row${done ? ' done' : ''}" data-id="${ex.id}" data-done="${done}">`;
-      html += `<span class="checkbox">${done ? '✓' : ''}</span>`;
+      html += `<span class="checkbox">${done ? '&#10003;' : ''}</span>`;
       html += `<span class="exercise-info">`;
       html += `<span class="exercise-name">${ex.name}</span>`;
       if (ex.detail) html += `<span class="exercise-detail">${ex.detail}</span>`;
@@ -146,12 +184,12 @@ async function render() {
     row.addEventListener('click', async () => {
       const id = row.dataset.id;
       const done = row.dataset.done === 'true';
-      // Optimistic update
       const newDone = !done;
+      // Optimistic update
       row.classList.toggle('done', newDone);
       row.dataset.done = String(newDone);
       const checkbox = row.querySelector('.checkbox');
-      if (checkbox) checkbox.textContent = newDone ? '✓' : '';
+      if (checkbox) checkbox.innerHTML = newDone ? '&#10003;' : '';
       try {
         await toggleExercise(id, done);
         await render();
@@ -159,7 +197,7 @@ async function render() {
         // Revert on write failure
         row.classList.toggle('done', done);
         row.dataset.done = String(done);
-        if (checkbox) checkbox.textContent = done ? '✓' : '';
+        if (checkbox) checkbox.innerHTML = done ? '&#10003;' : '';
         console.error('Toggle failed', err);
       }
     });
@@ -170,6 +208,33 @@ async function render() {
 // Init
 // ------------------------------------------------------------------
 async function init() {
+  const btnPrev = document.getElementById('btn-prev');
+  const btnNext = document.getElementById('btn-next');
+  const main = document.getElementById('main');
+
+  btnPrev.addEventListener('click', () => setDate(addDays(currentDate, -1)));
+  btnNext.addEventListener('click', () => setDate(addDays(currentDate, 1)));
+
+  // Swipe left/right to change day. Don't preventDefault so vertical scroll stays intact.
+  let swipeStartX = 0;
+  let swipeStartY = 0;
+  main.addEventListener('touchstart', (e) => {
+    const t = e.changedTouches[0];
+    swipeStartX = t.clientX;
+    swipeStartY = t.clientY;
+  }, { passive: true });
+  main.addEventListener('touchend', (e) => {
+    const t = e.changedTouches[0];
+    const dx = t.clientX - swipeStartX;
+    const dy = t.clientY - swipeStartY;
+    if (Math.abs(dx) <= 60 || Math.abs(dx) <= Math.abs(dy) * 1.5) return;
+    if (dx > 0) {
+      setDate(addDays(currentDate, -1));
+    } else {
+      setDate(addDays(currentDate, 1)); // setDate blocks future dates internally
+    }
+  }, { passive: true });
+
   await render();
 }
 

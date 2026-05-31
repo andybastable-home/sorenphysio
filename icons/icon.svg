@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Full background for maskable safe zone -->
+  <rect width="512" height="512" fill="#2a6db5"/>
+  <!-- Checkmark circle (content within safe zone: ~102–410px) -->
+  <circle cx="256" cy="256" r="150" fill="none" stroke="white" stroke-width="28"/>
+  <polyline points="178,256 230,310 334,196" stroke="white" stroke-width="34" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
