@@ -127,6 +127,77 @@ function setDate(date) {
 }
 
 // ------------------------------------------------------------------
+// XP & Levels
+// ------------------------------------------------------------------
+const XP_PER_EXERCISE = 10;
+const XP_FULL_DAY_BONUS = 25;
+
+const LEVELS = [
+  { xp: 0,    name: 'Newcomer'  },
+  { xp: 100,  name: 'Trainee'   },
+  { xp: 300,  name: 'Grinder'   },
+  { xp: 600,  name: 'Athlete'   },
+  { xp: 1000, name: 'Warrior'   },
+  { xp: 1500, name: 'Champion'  },
+  { xp: 2200, name: 'Elite'     },
+  { xp: 3200, name: 'Legend'    },
+  { xp: 4500, name: 'Immortal'  },
+  { xp: 6000, name: 'G.O.A.T.'  },
+];
+
+async function calcXP() {
+  const doneCount = await db.completions.filter(r => r.done === true).count();
+  let xp = doneCount * XP_PER_EXERCISE;
+
+  const dates = await db.completions.orderBy('date').uniqueKeys();
+  for (const date of dates) {
+    const dayDone = await db.completions.where('date').equals(date).filter(r => r.done === true).count();
+    if (dayDone >= EXERCISE_TEMPLATE.length) xp += XP_FULL_DAY_BONUS;
+  }
+
+  return xp;
+}
+
+function calcLevelInfo(xp) {
+  let levelIndex = 0;
+  for (let i = 0; i < LEVELS.length; i++) {
+    if (xp >= LEVELS[i].xp) levelIndex = i;
+  }
+  const current = LEVELS[levelIndex];
+  const next = LEVELS[levelIndex + 1];
+  const prevXP = current.xp;
+  const nextXP = next ? next.xp : null;
+  const xpIntoLevel = xp - prevXP;
+  const xpNeeded = nextXP !== null ? nextXP - prevXP : null;
+  const pct = xpNeeded !== null ? Math.min(100, (xpIntoLevel / xpNeeded) * 100) : 100;
+  return { level: levelIndex + 1, name: current.name, xpIntoLevel, xpNeeded, pct };
+}
+
+// ------------------------------------------------------------------
+// Streak
+// ------------------------------------------------------------------
+async function calcStreak() {
+  const today = startOfDay(new Date());
+  let streak = 0;
+  let checkDate = new Date(today);
+
+  for (let i = 0; i < 365; i++) {
+    const key = dateKey(checkDate);
+    const count = await db.completions.where('date').equals(key).filter(r => r.done === true).count();
+    if (count > 0) {
+      streak++;
+    } else if (i === 0) {
+      // today has no completions yet — check if yesterday keeps the streak alive
+    } else {
+      break;
+    }
+    checkDate = addDays(checkDate, -1);
+  }
+
+  return streak;
+}
+
+// ------------------------------------------------------------------
 // Render
 // ------------------------------------------------------------------
 async function render() {
@@ -141,7 +212,14 @@ async function render() {
   if (btnNext) btnNext.disabled = isSameDay(currentDate, today);
 
   const main = document.getElementById('main');
-  const completions = await loadCompletions(currentDate);
+  const [completions, streak, totalXP] = await Promise.all([loadCompletions(currentDate), calcStreak(), calcXP()]);
+
+  const badge = document.getElementById('streak-badge');
+  const countEl = document.getElementById('streak-count');
+  if (badge && countEl) {
+    countEl.textContent = streak;
+    badge.hidden = streak === 0;
+  }
 
   const groups = [];
   for (const time of TIME_ORDER) {
@@ -156,7 +234,20 @@ async function render() {
   const pct = total > 0 ? Math.round((totalDone / total) * 100) : 0;
   const complete = totalDone === total && total > 0;
 
-  let html = `<div class="day-progress">`;
+  const lv = calcLevelInfo(totalXP);
+  const xpLabel = lv.xpNeeded !== null
+    ? `${lv.xpIntoLevel} / ${lv.xpNeeded} XP`
+    : `MAX`;
+
+  let html = `<div class="xp-card">`;
+  html += `<div class="xp-card-row">`;
+  html += `<span class="xp-level">Lv.${lv.level} <span class="xp-name">${lv.name}</span></span>`;
+  html += `<span class="xp-amount">${xpLabel}</span>`;
+  html += `</div>`;
+  html += `<div class="xp-bar-track"><div class="xp-bar-fill" style="width:0"></div></div>`;
+  html += `</div>`;
+
+  html += `<div class="day-progress">`;
   html += `<div class="ring${complete ? ' complete' : ''}" style="--pct:${pct}">`;
   html += `<div class="ring-inner"><b>${totalDone}<i>/${total}</i></b><span class="ring-cap">done</span></div>`;
   html += `</div></div>`;
@@ -184,6 +275,11 @@ async function render() {
   }
 
   main.innerHTML = html;
+
+  requestAnimationFrame(() => {
+    const bar = main.querySelector('.xp-bar-fill');
+    if (bar) bar.style.width = `${lv.pct}%`;
+  });
 
   main.querySelectorAll('.exercise-row').forEach(row => {
     row.addEventListener('click', async () => {

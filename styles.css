@@ -9,13 +9,13 @@
   --surface-2:#1b2430;
   --border:#1e2734;
   --border-strong:#2b3543;
-  /* accent (volt) */
-  --accent:#c6ff3d;
+  /* accent (golden yellow) */
+  --accent:#FFDF00;
   --accent-ink:#0b0f14;
-  --accent-dim:rgba(198,255,61,.14);
+  --accent-dim:rgba(255,223,0,.14);
   /* completed state */
-  --done-surface:#171f17;
-  --done-border:#3d5e1c;
+  --done-surface:#181500;
+  --done-border:#4a3c00;
   /* text */
   --text:#e9eef5;
   --text-muted:#7b8696;
@@ -35,7 +35,7 @@
   --r-sm:9px; --r-md:14px; --r-lg:18px; --r-pill:999px;
   /* elevation */
   --shadow-1:0 2px 8px rgba(0,0,0,.45);
-  --glow-accent:0 0 0 1px rgba(198,255,61,.35),0 0 18px -4px rgba(198,255,61,.45);
+  --glow-accent:0 0 0 1px rgba(255,223,0,.35),0 0 18px -4px rgba(255,223,0,.45);
   /* motion */
   --dur-fast:120ms; --dur-med:200ms;
   --ease:cubic-bezier(.4,0,.2,1);
@@ -58,12 +58,36 @@ body {
   padding: var(--s2) var(--s4) var(--s4);
 }
 
+.brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--s3);
+}
+
 .brand-name {
   display: block;
   font-size: var(--fs-lg);
   font-weight: var(--fw-black);
   letter-spacing: -.01em;
-  padding-bottom: var(--s3);
+}
+
+.streak-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--accent);
+  font-size: 1.35rem;
+  font-weight: var(--fw-black);
+  letter-spacing: -.01em;
+  line-height: 1;
+}
+
+.streak-badge[hidden] { display: none; }
+
+.streak-flame {
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 60%, transparent));
 }
 
 .day-nav {
@@ -124,6 +148,56 @@ body {
   padding: var(--s4);
   max-width: 600px;
   margin: 0 auto;
+}
+
+/* ---------------- XP card ---------------- */
+.xp-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--s3) var(--s4);
+  margin-bottom: var(--s4);
+}
+
+.xp-card-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--s2);
+}
+
+.xp-level {
+  font-size: var(--fs-base);
+  font-weight: var(--fw-black);
+  color: var(--accent);
+  letter-spacing: -.01em;
+}
+
+.xp-name {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--text-muted);
+  margin-left: 4px;
+}
+
+.xp-amount {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  color: var(--text-muted);
+}
+
+.xp-bar-track {
+  height: 8px;
+  border-radius: var(--r-pill);
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.xp-bar-fill {
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ---------------- Progress ring ---------------- */
