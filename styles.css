@@ -593,6 +593,195 @@ body {
   letter-spacing: 0.06em;
 }
 
+/* ---------------- Droid animations ---------------- */
+@keyframes droid-bounce {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+@keyframes droid-float {
+  0%,100% { transform: translateY(0) rotate(-1deg); }
+  50%      { transform: translateY(-8px) rotate(1deg); }
+}
+@keyframes droid-pulse {
+  0%,100% { filter: drop-shadow(0 0 4px var(--rc,#fff)); transform: translateY(0); }
+  50%      { filter: drop-shadow(0 0 12px var(--rc,#fff)); transform: translateY(-6px); }
+}
+@keyframes droid-mythic {
+  0%,100% { filter: drop-shadow(0 0 6px var(--rc,#f80)) drop-shadow(0 0 14px var(--rc,#f80)); transform: translateY(0) scale(1); }
+  50%      { filter: drop-shadow(0 0 14px var(--rc,#f80)) drop-shadow(0 0 28px var(--rc,#f80)); transform: translateY(-8px) scale(1.04); }
+}
+@keyframes droid-legendary {
+  0%,100% { filter: drop-shadow(0 0 8px var(--rc,#ffd700)) drop-shadow(0 0 20px var(--rc,#ffd700)); transform: translateY(0) rotate(-1deg) scale(1); }
+  33%      { filter: drop-shadow(0 0 16px var(--rc,#ffd700)) drop-shadow(0 0 36px var(--rc,#ffd700)); transform: translateY(-10px) rotate(1deg) scale(1.06); }
+  66%      { filter: drop-shadow(0 0 10px var(--rc,#ffd700)); transform: translateY(-4px) rotate(-0.5deg) scale(1.02); }
+}
+
+.droid-svg.rarity-common    { animation: droid-bounce   2.4s ease-in-out infinite; }
+.droid-svg.rarity-rare      { animation: droid-float    3s   ease-in-out infinite; }
+.droid-svg.rarity-epic      { animation: droid-pulse    2s   ease-in-out infinite; }
+.droid-svg.rarity-mythic    { animation: droid-mythic   1.8s ease-in-out infinite; }
+.droid-svg.rarity-legendary { animation: droid-legendary 2s  ease-in-out infinite; }
+
+/* ---------------- Companion widget ---------------- */
+.companion-widget {
+  position: fixed;
+  bottom: 56px;
+  right: 14px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.companion-widget[hidden] { display: none; }
+
+.companion-art { display: flex; align-items: flex-end; }
+
+.companion-bubble {
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  padding: 8px 10px;
+  font-size: var(--fs-xs);
+  color: var(--text);
+  max-width: 180px;
+  text-align: center;
+  line-height: 1.4;
+  position: relative;
+  box-shadow: var(--shadow-1);
+}
+.companion-bubble[hidden] { display: none; }
+.companion-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  right: 20px;
+  border: 7px solid transparent;
+  border-top-color: var(--border-strong);
+  border-bottom: none;
+}
+
+/* ---------------- Droid collection grid ---------------- */
+.droid-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-top: var(--s2);
+}
+
+.droid-cell {
+  aspect-ratio: 1;
+  border-radius: var(--r-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  cursor: pointer;
+  transition: border-color .15s var(--ease), transform .15s var(--ease);
+  overflow: hidden;
+}
+.droid-cell.owned:hover  { transform: scale(1.06); }
+.droid-cell.active       { border-color: var(--rc, var(--accent)); box-shadow: 0 0 0 1px var(--rc, var(--accent)); }
+.droid-cell.locked       { opacity: .45; cursor: default; }
+
+.droid-lock {
+  font-size: 1.4rem;
+  color: var(--text-faint);
+  font-weight: var(--fw-black);
+}
+
+.droid-rarity-dot {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+}
+
+.droid-active-pip {
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* ---------------- Droid reveal modal ---------------- */
+.droid-reveal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.75);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity .25s var(--ease);
+}
+.droid-reveal.show { opacity: 1; }
+
+.droid-reveal-box {
+  background: var(--surface);
+  border: 2px solid var(--rc, var(--accent));
+  border-radius: var(--r-lg);
+  padding: var(--s6) var(--s6) var(--s5);
+  text-align: center;
+  max-width: 280px;
+  width: 90%;
+  box-shadow: 0 0 40px -8px var(--rc, var(--accent));
+  transform: scale(0.8);
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+}
+.droid-reveal.show .droid-reveal-box { transform: scale(1); }
+
+.droid-reveal-rarity {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-black);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--rc, var(--accent));
+  margin-bottom: var(--s3);
+}
+
+.droid-reveal-art {
+  display: flex;
+  justify-content: center;
+  margin: var(--s3) 0;
+}
+
+.droid-reveal-name {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-black);
+  margin-bottom: var(--s2);
+}
+
+.droid-reveal-quote {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: var(--s5);
+  line-height: 1.5;
+}
+
+.droid-reveal-close {
+  background: var(--rc, var(--accent));
+  color: var(--accent-ink);
+  border: none;
+  border-radius: var(--r-pill);
+  padding: 10px 24px;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-black);
+  font-family: var(--font);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* ---------------- Accessibility ---------------- */
 :focus-visible {
   outline: 2px solid var(--accent);

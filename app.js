@@ -27,6 +27,12 @@ db.version(2).stores({
   completions: '[date+exerciseId], date, exerciseId, done',
   purchases: '++id, type, purchasedAt, expiresAt',
 });
+db.version(3).stores({
+  completions: '[date+exerciseId], date, exerciseId, done',
+  purchases: '++id, type, purchasedAt, expiresAt',
+  companions: '++id, droidId, unlockedAt',
+  settings: 'key',
+});
 
 // ------------------------------------------------------------------
 // Exercise template (hardcoded; ids are permanent and unique)
@@ -51,7 +57,105 @@ const CREDITS_PER_LEVEL = 150;
 const SHOP_ITEMS = [
   { id: 'xp-boost',      name: 'XP Boost',      icon: '⚡', cost: 100, desc: '2× XP for 24 hours',                     detail: 'Stacks with Double XP Day for 4×!' },
   { id: 'streak-freeze', name: 'Streak Freeze',  icon: '🧊', cost: 150, desc: 'Protect your streak for one missed day', detail: 'Auto-used if you miss a day'        },
+  { id: 'droid-box',     name: 'Droid Box',      icon: '📦', cost: 300, desc: 'Unlock a random Star Wars droid companion', detail: 'Common 60% · Rare 25% · Epic 10% · Mythic 4% · Legendary 1%' },
 ];
+
+// ------------------------------------------------------------------
+// Droids
+// ------------------------------------------------------------------
+const RARITY = {
+  common:    { label: 'Common',    color: '#8a9bb0', weight: 60 },
+  rare:      { label: 'Rare',      color: '#4a9eff', weight: 25 },
+  epic:      { label: 'Epic',      color: '#b44aff', weight: 10 },
+  mythic:    { label: 'Mythic',    color: '#ff8800', weight:  4 },
+  legendary: { label: 'Legendary', color: '#ffd700', weight:  1 },
+};
+
+const DROIDS = [
+  { id:'mouse',    name:'Mouse Droid',        rarity:'common',    quote:'Bleep bloop.' },
+  { id:'gonk',     name:'Gonk Droid',         rarity:'common',    quote:'Gonk.' },
+  { id:'b1',       name:'B1 Battle Droid',    rarity:'common',    quote:'Roger roger.' },
+  { id:'superb2',  name:'Super Battle Droid', rarity:'rare',      quote:'Target acquired.' },
+  { id:'r7',       name:'R7 Astromech',       rarity:'rare',      quote:'*excited beeping*' },
+  { id:'a7',       name:'A7 Medical Droid',   rarity:'rare',      quote:'Your recovery is progressing nicely.' },
+  { id:'medical',  name:'2-1B Surgical',      rarity:'rare',      quote:'I find your pain... fascinating.' },
+  { id:'b2emo',    name:'B2EMO',              rarity:'epic',      quote:'I have a bad feeling... about everything.' },
+  { id:'spybot',   name:'Spy Probe Droid',    rarity:'epic',      quote:'...' },
+  { id:'twotubes', name:'Two Tubes',          rarity:'epic',      quote:'We take what we can get.' },
+  { id:'k2so',     name:'K-2SO',              rarity:'mythic',    quote:'The odds of completing your physio are actually quite good. Relative to dying.' },
+  { id:'bd1',      name:'BD-1',               rarity:'mythic',    quote:'*excited chirping and head tilts*' },
+  { id:'chopper',  name:'Chopper',            rarity:'mythic',    quote:'Bwaaah! (Translation: do your exercises.)' },
+  { id:'c3po',     name:'C-3PO',              rarity:'legendary', quote:'I am C-3PO, and I calculate a 97.6% chance of full recovery — provided you complete your exercises.' },
+  { id:'r2d2',     name:'R2-D2',              rarity:'legendary', quote:'*determined beeping and whistling*' },
+  { id:'bb8',      name:'BB-8',               rarity:'legendary', quote:'*approving beeps and a little thumbs up*' },
+];
+
+const DROID_ART = {
+  mouse: `<rect x="8" y="32" width="44" height="22" rx="5" fill="#252930"/><ellipse cx="30" cy="33" rx="20" ry="12" fill="#1c2026"/><circle cx="20" cy="36" r="4" fill="#ff2200"/><circle cx="40" cy="36" r="4" fill="#ff2200"/><ellipse cx="15" cy="54" rx="6" ry="4" fill="#111"/><ellipse cx="30" cy="56" rx="6" ry="4" fill="#111"/><ellipse cx="45" cy="54" rx="6" ry="4" fill="#111"/><line x1="10" y1="42" x2="50" y2="42" stroke="#111" stroke-width="1" opacity="0.4"/>`,
+
+  gonk: `<rect x="15" y="16" width="30" height="36" rx="6" fill="#4a3520"/><rect x="18" y="10" width="24" height="10" rx="5" fill="#5a4530"/><rect x="19" y="26" width="22" height="3" rx="1" fill="#2a1808"/><rect x="19" y="32" width="22" height="3" rx="1" fill="#2a1808"/><rect x="19" y="38" width="22" height="3" rx="1" fill="#2a1808"/><rect x="17" y="52" width="9" height="18" rx="3" fill="#3a2510"/><rect x="34" y="52" width="9" height="18" rx="3" fill="#3a2510"/><rect x="13" y="67" width="17" height="7" rx="2" fill="#2a1808"/><rect x="30" y="67" width="17" height="7" rx="2" fill="#2a1808"/>`,
+
+  b1: `<ellipse cx="30" cy="10" rx="9" ry="8" fill="#c8b87a" transform="skewX(-8)"/><rect x="27" y="17" width="6" height="9" fill="#bfaf70"/><rect x="20" y="26" width="20" height="18" rx="3" fill="#c8b87a"/><rect x="38" y="24" width="9" height="14" rx="2" fill="#b8a860"/><line x1="20" y1="31" x2="7" y2="45" stroke="#c8b87a" stroke-width="4" stroke-linecap="round"/><line x1="40" y1="31" x2="53" y2="45" stroke="#c8b87a" stroke-width="4" stroke-linecap="round"/><line x1="25" y1="44" x2="21" y2="72" stroke="#c8b87a" stroke-width="5" stroke-linecap="round"/><line x1="35" y1="44" x2="39" y2="72" stroke="#c8b87a" stroke-width="5" stroke-linecap="round"/><circle cx="25" cy="8" r="2.5" fill="#550000" opacity="0.9"/><circle cx="35" cy="8" r="2.5" fill="#550000" opacity="0.9"/>`,
+
+  superb2: `<ellipse cx="30" cy="13" rx="14" ry="12" fill="#555"/><rect x="16" y="23" width="28" height="24" rx="4" fill="#4a4a4a"/><circle cx="22" cy="14" r="5" fill="#88aaff" opacity="0.8"/><circle cx="38" cy="14" r="5" fill="#88aaff" opacity="0.8"/><circle cx="22" cy="14" r="2" fill="#111"/><circle cx="38" cy="14" r="2" fill="#111"/><rect x="10" y="26" width="8" height="18" rx="3" fill="#3a3a3a"/><rect x="42" y="26" width="8" height="18" rx="3" fill="#3a3a3a"/><rect x="20" y="47" width="9" height="22" rx="3" fill="#3a3a3a"/><rect x="31" y="47" width="9" height="22" rx="3" fill="#3a3a3a"/><rect x="17" y="27" width="26" height="5" rx="2" fill="#222" opacity="0.5"/>`,
+
+  r7: `<ellipse cx="30" cy="20" rx="18" ry="17" fill="#cc2200"/><ellipse cx="30" cy="20" rx="14" ry="13" fill="#999"/><circle cx="30" cy="20" r="6" fill="#cc2200"/><rect x="12" y="35" width="36" height="30" rx="6" fill="#cc2200"/><rect x="16" y="39" width="28" height="20" rx="4" fill="#aaa"/><circle cx="30" cy="49" r="7" fill="#cc2200"/><rect x="10" y="52" width="6" height="14" rx="3" fill="#999"/><rect x="44" y="52" width="6" height="14" rx="3" fill="#999"/>`,
+
+  a7: `<ellipse cx="30" cy="12" rx="10" ry="10" fill="#888"/><rect x="20" y="20" width="20" height="26" rx="3" fill="#7a7a7a"/><line x1="20" y1="26" x2="5" y2="19" stroke="#777" stroke-width="4" stroke-linecap="round"/><line x1="40" y1="26" x2="55" y2="19" stroke="#777" stroke-width="4" stroke-linecap="round"/><circle cx="5" cy="19" r="5" fill="#555"/><circle cx="55" cy="19" r="5" fill="#555"/><rect x="23" y="46" width="6" height="24" rx="3" fill="#666"/><rect x="31" y="46" width="6" height="24" rx="3" fill="#666"/><circle cx="30" cy="12" r="5" fill="#00aaff" opacity="0.7"/>`,
+
+  medical: `<ellipse cx="30" cy="13" rx="12" ry="11" fill="#aaa"/><rect x="18" y="22" width="24" height="28" rx="4" fill="#999"/><line x1="18" y1="30" x2="4" y2="22" stroke="#888" stroke-width="4" stroke-linecap="round"/><line x1="42" y1="30" x2="56" y2="22" stroke="#888" stroke-width="4" stroke-linecap="round"/><circle cx="4" cy="22" r="5" fill="#666"/><circle cx="56" cy="22" r="5" fill="#666"/><rect x="22" y="50" width="7" height="22" rx="3" fill="#888"/><rect x="31" y="50" width="7" height="22" rx="3" fill="#888"/><circle cx="30" cy="14" r="5" fill="#555"/><circle cx="27" cy="12" r="2" fill="#fff" opacity="0.8"/>`,
+
+  b2emo: `<rect x="8" y="26" width="44" height="34" rx="6" fill="#2a3a3a"/><rect x="12" y="20" width="36" height="14" rx="4" fill="#1e2e2e"/><ellipse cx="30" cy="32" rx="13" ry="11" fill="#162626"/><circle cx="30" cy="32" r="8" fill="#0a1a1a"/><circle cx="30" cy="32" r="5" fill="#004444" opacity="0.9"/><circle cx="30" cy="32" r="2" fill="#00aaaa"/><rect x="12" y="60" width="8" height="6" rx="2" fill="#1a2a2a"/><rect x="26" y="60" width="8" height="6" rx="2" fill="#1a2a2a"/><rect x="40" y="60" width="8" height="6" rx="2" fill="#1a2a2a"/><rect x="9" y="63" width="14" height="4" rx="2" fill="#111"/><rect x="23" y="63" width="14" height="4" rx="2" fill="#111"/><rect x="37" y="63" width="14" height="4" rx="2" fill="#111"/>`,
+
+  spybot: `<circle cx="30" cy="36" r="24" fill="#111"/><circle cx="30" cy="36" r="20" fill="#1a1a1a"/><circle cx="30" cy="36" r="7" fill="#ff2200"/><circle cx="30" cy="36" r="3" fill="#ff7700"/><line x1="30" y1="16" x2="30" y2="6" stroke="#333" stroke-width="3"/><circle cx="30" cy="6" r="4" fill="#222"/><circle cx="30" cy="6" r="2" fill="#ff4400" opacity="0.9"/><circle cx="16" cy="30" r="2" fill="#333"/><circle cx="44" cy="30" r="2" fill="#333"/><line x1="10" y1="38" x2="4" y2="44" stroke="#222" stroke-width="2"/><line x1="50" y1="38" x2="56" y2="44" stroke="#222" stroke-width="2"/>`,
+
+  twotubes: `<ellipse cx="30" cy="12" rx="12" ry="11" fill="#3a4a4a"/><rect x="18" y="21" width="24" height="26" rx="4" fill="#2e3e3e"/><line x1="22" y1="18" x2="12" y2="32" stroke="#1a2a2a" stroke-width="4" stroke-linecap="round"/><line x1="38" y1="18" x2="48" y2="32" stroke="#1a2a2a" stroke-width="4" stroke-linecap="round"/><circle cx="12" cy="33" r="4" fill="#111"/><circle cx="48" cy="33" r="4" fill="#111"/><circle cx="25" cy="13" r="3.5" fill="#445566" opacity="0.8"/><circle cx="35" cy="13" r="3.5" fill="#445566" opacity="0.8"/><rect x="22" y="47" width="7" height="22" rx="3" fill="#2e3e3e"/><rect x="31" y="47" width="7" height="22" rx="3" fill="#2e3e3e"/>`,
+
+  k2so: `<ellipse cx="30" cy="9" rx="12" ry="9" fill="#6a6a6a"/><rect x="18" y="9" width="24" height="10" rx="2" fill="#707070"/><rect x="21" y="18" width="18" height="26" rx="3" fill="#6a6a6a"/><circle cx="25" cy="13" r="4" fill="#fff" opacity="0.9"/><circle cx="25" cy="13" r="2" fill="#000"/><line x1="21" y1="24" x2="6" y2="42" stroke="#606060" stroke-width="6" stroke-linecap="round"/><line x1="39" y1="24" x2="54" y2="42" stroke="#606060" stroke-width="6" stroke-linecap="round"/><line x1="6" y1="42" x2="8" y2="56" stroke="#505050" stroke-width="5" stroke-linecap="round"/><line x1="54" y1="42" x2="52" y2="56" stroke="#505050" stroke-width="5" stroke-linecap="round"/><rect x="23" y="44" width="7" height="26" rx="3" fill="#606060"/><rect x="30" y="44" width="7" height="26" rx="3" fill="#606060"/>`,
+
+  bd1: `<ellipse cx="30" cy="18" rx="17" ry="15" fill="#e0e0e0"/><circle cx="30" cy="18" r="11" fill="#fff"/><circle cx="30" cy="18" r="8" fill="#ff8c00"/><circle cx="30" cy="18" r="4" fill="#1a1a1a"/><circle cx="28" cy="16" r="1.5" fill="#fff" opacity="0.8"/><rect x="22" y="31" width="16" height="18" rx="4" fill="#ddd"/><line x1="22" y1="35" x2="9" y2="50" stroke="#ccc" stroke-width="5" stroke-linecap="round"/><line x1="38" y1="35" x2="51" y2="50" stroke="#ccc" stroke-width="5" stroke-linecap="round"/><line x1="25" y1="49" x2="22" y2="72" stroke="#ccc" stroke-width="5" stroke-linecap="round"/><line x1="35" y1="49" x2="38" y2="72" stroke="#ccc" stroke-width="5" stroke-linecap="round"/><line x1="22" y1="8" x2="9" y2="2" stroke="#bbb" stroke-width="3" stroke-linecap="round"/>`,
+
+  chopper: `<ellipse cx="30" cy="14" rx="14" ry="12" fill="#f5700a"/><rect x="16" y="24" width="28" height="26" rx="6" fill="#f5700a"/><rect x="20" y="27" width="20" height="12" rx="3" fill="#fff"/><circle cx="25" cy="33" r="4" fill="#1a1a1a"/><circle cx="35" cy="33" r="4" fill="#1a1a1a"/><circle cx="25" cy="33" r="1.5" fill="#ff0000"/><circle cx="35" cy="33" r="1.5" fill="#ff0000"/><rect x="25" y="50" width="4" height="18" rx="2" fill="#d96000"/><rect x="31" y="50" width="4" height="18" rx="2" fill="#d96000"/><rect x="22" y="66" width="10" height="6" rx="2" fill="#c05000"/><rect x="28" y="66" width="10" height="6" rx="2" fill="#c05000"/><line x1="16" y1="30" x2="5" y2="26" stroke="#e06000" stroke-width="5" stroke-linecap="round"/><line x1="44" y1="30" x2="55" y2="26" stroke="#e06000" stroke-width="5" stroke-linecap="round"/>`,
+
+  c3po: `<ellipse cx="30" cy="11" rx="13" ry="11" fill="#ffd700"/><rect x="17" y="21" width="26" height="26" rx="4" fill="#ffc800"/><circle cx="24" cy="11" r="5" fill="#cc9900"/><circle cx="36" cy="11" r="5" fill="#cc9900"/><circle cx="24" cy="11" r="2.5" fill="#111"/><circle cx="36" cy="11" r="2.5" fill="#111"/><line x1="17" y1="27" x2="4" y2="37" stroke="#ffcc00" stroke-width="6" stroke-linecap="round"/><line x1="43" y1="27" x2="56" y2="37" stroke="#ffcc00" stroke-width="6" stroke-linecap="round"/><line x1="4" y1="37" x2="6" y2="55" stroke="#ffb800" stroke-width="5" stroke-linecap="round"/><line x1="56" y1="37" x2="54" y2="55" stroke="#ffb800" stroke-width="5" stroke-linecap="round"/><rect x="22" y="47" width="7" height="24" rx="3" fill="#ffc800"/><rect x="31" y="47" width="7" height="24" rx="3" fill="#ffc800"/><rect x="21" y="28" width="18" height="5" rx="2" fill="#cc9900" opacity="0.5"/>`,
+
+  r2d2: `<ellipse cx="30" cy="18" rx="20" ry="17" fill="#4488cc"/><ellipse cx="30" cy="18" rx="16" ry="13" fill="#eee"/><circle cx="30" cy="16" r="8" fill="#4488cc"/><circle cx="30" cy="16" r="5" fill="#aac8ee"/><circle cx="30" cy="16" r="2.5" fill="#111"/><rect x="10" y="33" width="40" height="32" rx="6" fill="#eee"/><rect x="14" y="37" width="32" height="20" rx="4" fill="#4488cc" opacity="0.2"/><circle cx="30" cy="47" r="6" fill="#4488cc"/><rect x="8" y="51" width="6" height="18" rx="3" fill="#ccc"/><rect x="46" y="51" width="6" height="18" rx="3" fill="#ccc"/><rect x="6" y="65" width="10" height="6" rx="2" fill="#aaa"/><rect x="44" y="65" width="10" height="6" rx="2" fill="#aaa"/>`,
+
+  bb8: `<circle cx="30" cy="48" r="26" fill="#f5f0e8"/><circle cx="30" cy="48" r="26" fill="none" stroke="#ff6a00" stroke-width="5" stroke-dasharray="28 20"/><ellipse cx="30" cy="22" rx="16" ry="12" fill="#eee"/><ellipse cx="30" cy="22" rx="12" ry="9" fill="#ff6a00" opacity="0.3"/><circle cx="30" cy="20" r="6" fill="#ff6a00"/><circle cx="30" cy="20" r="3" fill="#111"/><circle cx="28" cy="18" r="1.5" fill="#fff" opacity="0.7"/><circle cx="22" cy="24" r="2" fill="#555"/>`,
+};
+
+function rollDroid() {
+  const total = Object.values(RARITY).reduce((s, r) => s + r.weight, 0);
+  let roll = Math.random() * total;
+  let rolledRarity = 'common';
+  for (const [key, r] of Object.entries(RARITY)) {
+    roll -= r.weight;
+    if (roll <= 0) { rolledRarity = key; break; }
+  }
+  const pool = DROIDS.filter(d => d.rarity === rolledRarity);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+async function getCollection() {
+  return db.companions.toArray();
+}
+
+async function setActiveCompanion(droidId) {
+  await db.settings.put({ key: 'activeCompanion', value: droidId });
+}
+
+async function getActiveCompanion() {
+  const s = await db.settings.get('activeCompanion');
+  return s ? s.value : null;
+}
+
+function renderDroid(droidId, size) {
+  const art  = DROID_ART[droidId];
+  const droid = DROIDS.find(d => d.id === droidId);
+  if (!art || !droid) return '';
+  const h = Math.round(size * 80 / 60);
+  return `<svg viewBox="0 0 60 80" width="${size}" height="${h}" class="droid-svg rarity-${droid.rarity}" style="--rc:${RARITY[droid.rarity].color}">${art}</svg>`;
+}
 
 function calcCreditsEarned(level) {
   return (level - 1) * CREDITS_PER_LEVEL;
@@ -59,10 +163,13 @@ function calcCreditsEarned(level) {
 
 async function calcCreditsSpent() {
   const all = await db.purchases.toArray();
-  return all.reduce((sum, p) => {
+  const shopSpent = all.reduce((sum, p) => {
     const item = SHOP_ITEMS.find(i => i.id === p.type);
     return sum + (item ? item.cost : 0);
   }, 0);
+  const boxCount = await db.companions.count();
+  const boxItem  = SHOP_ITEMS.find(i => i.id === 'droid-box');
+  return shopSpent + boxCount * (boxItem?.cost ?? 0);
 }
 
 async function getCreditBalance(level) {
@@ -72,6 +179,11 @@ async function getCreditBalance(level) {
 async function purchaseItem(itemId, balance) {
   const item = SHOP_ITEMS.find(i => i.id === itemId);
   if (!item || balance < item.cost) return false;
+  if (itemId === 'droid-box') {
+    const droid = rollDroid();
+    await db.companions.add({ droidId: droid.id, unlockedAt: Date.now() });
+    return { type: 'droid-box', droid };
+  }
   const record = { type: itemId, purchasedAt: Date.now() };
   if (itemId === 'xp-boost') record.expiresAt = Date.now() + DAY_MS;
   await db.purchases.add(record);
@@ -300,8 +412,11 @@ async function renderShop(balance) {
 
   listEl.querySelectorAll('.shop-buy-btn:not([disabled])').forEach(btn => {
     btn.addEventListener('click', async () => {
-      const success = await purchaseItem(btn.dataset.item, balance);
-      if (!success) return;
+      const result = await purchaseItem(btn.dataset.item, balance);
+      if (!result) return;
+      if (result.type === 'droid-box') {
+        showDroidReveal(result.droid);
+      }
       await render();
       const newXP = await calcXP();
       const lv = calcLevelInfo(newXP);
@@ -318,6 +433,64 @@ async function renderShop(balance) {
   invEl.innerHTML = invItems.length
     ? `<div class="shop-inv-title">Your inventory</div>` + invItems.map(i => `<div class="shop-inv-row">${i}</div>`).join('')
     : '';
+
+  // Collection grid
+  const collEl = document.getElementById('shop-collection');
+  if (!collEl) return;
+  const owned = await getCollection();
+  const ownedIds = new Set(owned.map(c => c.droidId));
+  const activeDroidId = await getActiveCompanion();
+  let collHtml = `<div class="shop-inv-title" style="margin-top:20px">Droid Collection (${ownedIds.size}/${DROIDS.length})</div><div class="droid-grid">`;
+  for (const droid of DROIDS) {
+    const isOwned  = ownedIds.has(droid.id);
+    const isActive = droid.id === activeDroidId;
+    const r = RARITY[droid.rarity];
+    collHtml += `<div class="droid-cell${isOwned ? ' owned' : ' locked'}${isActive ? ' active' : ''}" data-droid="${droid.id}" title="${droid.name}" style="--rc:${r.color}">`;
+    if (isOwned) {
+      collHtml += renderDroid(droid.id, 44);
+      if (isActive) collHtml += `<div class="droid-active-pip"></div>`;
+    } else {
+      collHtml += `<div class="droid-lock">?</div>`;
+    }
+    collHtml += `<div class="droid-rarity-dot" style="background:${r.color}"></div>`;
+    collHtml += `</div>`;
+  }
+  collHtml += `</div>`;
+  collEl.innerHTML = collHtml;
+
+  collEl.querySelectorAll('.droid-cell.owned').forEach(cell => {
+    cell.addEventListener('click', async () => {
+      const droidId = cell.dataset.droid;
+      await setActiveCompanion(droidId);
+      await render();
+      await renderShop(balance);
+    });
+  });
+}
+
+function showDroidReveal(droid) {
+  const r = RARITY[droid.rarity];
+  const existing = document.getElementById('droid-reveal');
+  if (existing) existing.remove();
+  const el = document.createElement('div');
+  el.id = 'droid-reveal';
+  el.className = 'droid-reveal';
+  el.innerHTML = `
+    <div class="droid-reveal-box" style="--rc:${r.color}">
+      <div class="droid-reveal-rarity">${r.label}</div>
+      <div class="droid-reveal-art">${renderDroid(droid.id, 80)}</div>
+      <div class="droid-reveal-name">${droid.name}</div>
+      <div class="droid-reveal-quote">"${droid.quote}"</div>
+      <button class="droid-reveal-close">Set as companion</button>
+    </div>`;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('show'));
+  el.querySelector('.droid-reveal-close').addEventListener('click', async () => {
+    await setActiveCompanion(droid.id);
+    await render();
+    el.remove();
+  });
+  el.addEventListener('click', (e) => { if (e.target === el) el.remove(); });
 }
 
 async function openShop() {
@@ -370,6 +543,19 @@ async function render() {
   }
   const creditsEl = document.getElementById('header-credits');
   if (creditsEl) creditsEl.textContent = balance;
+
+  // Companion widget
+  const activeDroidId = await getActiveCompanion();
+  const widget = document.getElementById('companion-widget');
+  const widgetArt = document.getElementById('companion-art');
+  if (widget && widgetArt) {
+    if (activeDroidId) {
+      widgetArt.innerHTML = renderDroid(activeDroidId, 58);
+      widget.hidden = false;
+    } else {
+      widget.hidden = true;
+    }
+  }
 
   const groups = [];
   for (const time of TIME_ORDER) {
@@ -475,6 +661,20 @@ async function init() {
   document.getElementById('shop-btn').addEventListener('click', openShop);
   document.getElementById('shop-close').addEventListener('click', closeShop);
   document.getElementById('shop-backdrop').addEventListener('click', closeShop);
+
+  const widget = document.getElementById('companion-widget');
+  const bubble = document.getElementById('companion-bubble');
+  if (widget && bubble) {
+    widget.addEventListener('click', async () => {
+      const droidId = await getActiveCompanion();
+      const droid = DROIDS.find(d => d.id === droidId);
+      if (!droid) return;
+      bubble.textContent = droid.quote;
+      bubble.hidden = false;
+      clearTimeout(widget._bubbleTimer);
+      widget._bubbleTimer = setTimeout(() => { bubble.hidden = true; }, 4000);
+    });
+  }
 
   // Swipe left/right to change day. Don't preventDefault so vertical scroll stays intact.
   let swipeStartX = 0;
