@@ -622,6 +622,15 @@ body {
 .droid-svg.rarity-mythic    { animation: droid-mythic   1.8s ease-in-out infinite; }
 .droid-svg.rarity-legendary { animation: droid-legendary 2s  ease-in-out infinite; }
 
+/* K-2SO is too tall for the screen and has to duck */
+@keyframes k2so-too-tall {
+  0%, 55%  { transform: translateY(-38px); }            /* sticking way up, head off screen */
+  65%      { transform: translateY(8px) rotate(-4deg); } /* ducking down awkwardly */
+  72%      { transform: translateY(-10px) rotate(2deg); }/* straightening up */
+  80%, 100%{ transform: translateY(-38px); }             /* back to too tall */
+}
+.droid-id-k2so { animation: k2so-too-tall 4s ease-in-out infinite !important; }
+
 /* ---------------- Companion widget ---------------- */
 .companion-widget {
   position: fixed;

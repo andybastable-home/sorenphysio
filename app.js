@@ -154,7 +154,7 @@ function renderDroid(droidId, size) {
   const droid = DROIDS.find(d => d.id === droidId);
   if (!art || !droid) return '';
   const h = Math.round(size * 80 / 60);
-  return `<svg viewBox="0 0 60 80" width="${size}" height="${h}" class="droid-svg rarity-${droid.rarity}" style="--rc:${RARITY[droid.rarity].color}">${art}</svg>`;
+  return `<svg viewBox="0 0 60 80" width="${size}" height="${h}" class="droid-svg rarity-${droid.rarity} droid-id-${droid.id}" style="--rc:${RARITY[droid.rarity].color}">${art}</svg>`;
 }
 
 function calcCreditsEarned(level) {
@@ -550,7 +550,8 @@ async function render() {
   const widgetArt = document.getElementById('companion-art');
   if (widget && widgetArt) {
     if (activeDroidId) {
-      widgetArt.innerHTML = renderDroid(activeDroidId, 58);
+      const companionSize = activeDroidId === 'k2so' ? 108 : 78;
+      widgetArt.innerHTML = renderDroid(activeDroidId, companionSize);
       widget.hidden = false;
     } else {
       widget.hidden = true;
