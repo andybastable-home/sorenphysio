@@ -200,6 +200,30 @@ body {
   transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.xp-double-active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent-dim), 0 0 18px -4px var(--accent-dim);
+}
+
+.xp-double-banner {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-black);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-radius: var(--r-pill);
+  padding: 2px 10px;
+  margin-bottom: var(--s2);
+  display: inline-block;
+  animation: xp-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes xp-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.7; }
+}
+
 /* ---------------- Progress ring ---------------- */
 .day-progress {
   display: flex;

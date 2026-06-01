@@ -145,16 +145,24 @@ const LEVELS = [
   { xp: 6000, name: 'G.O.A.T.'  },
 ];
 
-async function calcXP() {
-  const doneCount = await db.completions.filter(r => r.done === true).count();
-  let xp = doneCount * XP_PER_EXERCISE;
+function isDoubleXPDay(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  const daysSinceEpoch = Math.floor(date.getTime() / 86400000);
+  const weekSeed = Math.floor((daysSinceEpoch + 4) / 7);
+  const doubleDay = ((weekSeed * 1234567) % 7 + 7) % 7;
+  return date.getDay() === doubleDay;
+}
 
+async function calcXP() {
   const dates = await db.completions.orderBy('date').uniqueKeys();
+  let xp = 0;
   for (const date of dates) {
     const dayDone = await db.completions.where('date').equals(date).filter(r => r.done === true).count();
-    if (dayDone >= EXERCISE_TEMPLATE.length) xp += XP_FULL_DAY_BONUS;
+    const multiplier = isDoubleXPDay(date) ? 2 : 1;
+    xp += dayDone * XP_PER_EXERCISE * multiplier;
+    if (dayDone >= EXERCISE_TEMPLATE.length) xp += XP_FULL_DAY_BONUS * multiplier;
   }
-
   return xp;
 }
 
@@ -239,7 +247,12 @@ async function render() {
     ? `${lv.xpIntoLevel} / ${lv.xpNeeded} XP`
     : `MAX`;
 
-  let html = `<div class="xp-card">`;
+  const doubleToday = isDoubleXPDay(dateKey(currentDate));
+
+  let html = `<div class="xp-card${doubleToday ? ' xp-double-active' : ''}">`;
+  if (doubleToday) {
+    html += `<div class="xp-double-banner">⚡ Double XP Day!</div>`;
+  }
   html += `<div class="xp-card-row">`;
   html += `<span class="xp-level">Lv.${lv.level} <span class="xp-name">${lv.name}</span></span>`;
   html += `<span class="xp-amount">${xpLabel}</span>`;
