@@ -16,12 +16,18 @@
   <header class="app-header">
     <div class="brand-row">
       <span class="brand-name">Soren Physio</span>
-      <div class="streak-badge" id="streak-badge" hidden>
-        <svg class="streak-flame" width="18" height="22" viewBox="0 0 18 22" fill="currentColor" aria-hidden="true">
-          <path d="M9 0C7 3.5 4 7 4 11c0 0-1.5-1.5-.5-4C1 10 0 13 0 15c0 4.4 4 7 9 7s9-2.6 9-7c0-5-5-10-9-15z" opacity="0.9"/>
-          <path d="M9 12c0 0-2 2-2 4 0 1.7.9 3 2 3s2-1.3 2-3c0-2-2-4-2-4z" opacity="0.45"/>
-        </svg>
-        <span id="streak-count">0</span>
+      <div class="header-right">
+        <button class="shop-btn" id="shop-btn" aria-label="Open shop">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="currentColor" aria-hidden="true"><circle cx="6.5" cy="6.5" r="6" stroke="currentColor" stroke-width="1" fill="none" opacity="0.5"/><text x="6.5" y="10.5" text-anchor="middle" font-size="7.5" font-weight="800" font-family="system-ui,sans-serif">C</text></svg>
+          <span id="header-credits">0</span>
+        </button>
+        <div class="streak-badge" id="streak-badge" hidden>
+          <svg class="streak-flame" width="18" height="22" viewBox="0 0 18 22" fill="currentColor" aria-hidden="true">
+            <path d="M9 0C7 3.5 4 7 4 11c0 0-1.5-1.5-.5-4C1 10 0 13 0 15c0 4.4 4 7 9 7s9-2.6 9-7c0-5-5-10-9-15z" opacity="0.9"/>
+            <path d="M9 12c0 0-2 2-2 4 0 1.7.9 3 2 3s2-1.3 2-3c0-2-2-4-2-4z" opacity="0.45"/>
+          </svg>
+          <span id="streak-count">0</span>
+        </div>
       </div>
     </div>
     <nav class="day-nav">
@@ -37,8 +43,27 @@
   <main id="main"></main>
 
   <footer class="app-footer">
-    <span id="version">v0.2.4</span>
+    <span id="version">v0.3.0</span>
   </footer>
+
+  <!-- Shop overlay -->
+  <div id="shop-overlay" class="shop-overlay" hidden>
+    <div class="shop-backdrop" id="shop-backdrop"></div>
+    <div class="shop-panel">
+      <div class="shop-handle"></div>
+      <div class="shop-head">
+        <h2 class="shop-title">Shop</h2>
+        <div class="shop-bal-pill">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="currentColor" aria-hidden="true"><circle cx="6.5" cy="6.5" r="6" stroke="currentColor" stroke-width="1" fill="none" opacity="0.5"/><text x="6.5" y="10.5" text-anchor="middle" font-size="7.5" font-weight="800" font-family="system-ui,sans-serif">C</text></svg>
+          <span id="shop-bal-display">0</span>
+        </div>
+        <button id="shop-close" class="shop-close-btn" aria-label="Close shop">✕</button>
+      </div>
+      <p class="shop-hint">Earn <strong>150 credits</strong> every time you level up.</p>
+      <div id="shop-items-list" class="shop-items-list"></div>
+      <div id="shop-inventory" class="shop-inventory"></div>
+    </div>
+  </div>
 
   <script src="https://unpkg.com/dexie@4.4.2/dist/dexie.min.js"></script>
   <script src="./app.js"></script>

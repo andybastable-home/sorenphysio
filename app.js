@@ -21,8 +21,11 @@ if ('serviceWorker' in navigator) {
 // ------------------------------------------------------------------
 const db = new Dexie('SorenPhysio');
 db.version(1).stores({
-  // Compound PK [date+exerciseId] => one idempotent row per exercise per day.
   completions: '[date+exerciseId], date, exerciseId, done',
+});
+db.version(2).stores({
+  completions: '[date+exerciseId], date, exerciseId, done',
+  purchases: '++id, type, purchasedAt, expiresAt',
 });
 
 // ------------------------------------------------------------------
@@ -40,6 +43,40 @@ const EXERCISE_TEMPLATE = [
 ];
 const TIME_ORDER = ['Morning', 'Evening'];
 const CATEGORY_ORDER = ['Stretches', 'Exercise'];
+
+// ------------------------------------------------------------------
+// Shop
+// ------------------------------------------------------------------
+const CREDITS_PER_LEVEL = 150;
+const SHOP_ITEMS = [
+  { id: 'xp-boost',      name: 'XP Boost',      icon: '⚡', cost: 100, desc: '2× XP for 24 hours',                     detail: 'Stacks with Double XP Day for 4×!' },
+  { id: 'streak-freeze', name: 'Streak Freeze',  icon: '🧊', cost: 150, desc: 'Protect your streak for one missed day', detail: 'Auto-used if you miss a day'        },
+];
+
+function calcCreditsEarned(level) {
+  return (level - 1) * CREDITS_PER_LEVEL;
+}
+
+async function calcCreditsSpent() {
+  const all = await db.purchases.toArray();
+  return all.reduce((sum, p) => {
+    const item = SHOP_ITEMS.find(i => i.id === p.type);
+    return sum + (item ? item.cost : 0);
+  }, 0);
+}
+
+async function getCreditBalance(level) {
+  return Math.max(0, calcCreditsEarned(level) - await calcCreditsSpent());
+}
+
+async function purchaseItem(itemId, balance) {
+  const item = SHOP_ITEMS.find(i => i.id === itemId);
+  if (!item || balance < item.cost) return false;
+  const record = { type: itemId, purchasedAt: Date.now() };
+  if (itemId === 'xp-boost') record.expiresAt = Date.now() + DAY_MS;
+  await db.purchases.add(record);
+  return true;
+}
 
 // ------------------------------------------------------------------
 // Date helpers
@@ -156,10 +193,16 @@ function isDoubleXPDay(dateStr) {
 
 async function calcXP() {
   const dates = await db.completions.orderBy('date').uniqueKeys();
+  const boosts = await db.purchases.where('type').equals('xp-boost').toArray();
   let xp = 0;
   for (const date of dates) {
     const dayDone = await db.completions.where('date').equals(date).filter(r => r.done === true).count();
-    const multiplier = isDoubleXPDay(date) ? 2 : 1;
+    const [y, m, d] = date.split('-').map(Number);
+    const dayStart = new Date(y, m - 1, d).getTime();
+    const dayEnd = dayStart + DAY_MS;
+    let multiplier = 1;
+    if (isDoubleXPDay(date)) multiplier *= 2;
+    if (boosts.some(b => b.purchasedAt < dayEnd && (b.expiresAt ?? 0) > dayStart)) multiplier *= 2;
     xp += dayDone * XP_PER_EXERCISE * multiplier;
     if (dayDone >= EXERCISE_TEMPLATE.length) xp += XP_FULL_DAY_BONUS * multiplier;
   }
@@ -186,6 +229,10 @@ function calcLevelInfo(xp) {
 // ------------------------------------------------------------------
 async function calcStreak() {
   const today = startOfDay(new Date());
+  const allFreezes = await db.purchases.where('type').equals('streak-freeze').toArray();
+  const usedDates = new Set(allFreezes.filter(f => f.usedForDate).map(f => f.usedForDate));
+  const unusedFreezes = allFreezes.filter(f => !f.usedForDate);
+
   let streak = 0;
   let checkDate = new Date(today);
 
@@ -195,7 +242,14 @@ async function calcStreak() {
     if (count > 0) {
       streak++;
     } else if (i === 0) {
-      // today has no completions yet — check if yesterday keeps the streak alive
+      // today empty — check yesterday
+    } else if (usedDates.has(key)) {
+      streak++; // gap already bridged by a previously consumed freeze
+    } else if (unusedFreezes.length > 0) {
+      const freeze = unusedFreezes.shift();
+      await db.purchases.update(freeze.id, { usedForDate: key });
+      usedDates.add(key);
+      streak++;
     } else {
       break;
     }
@@ -203,6 +257,87 @@ async function calcStreak() {
   }
 
   return streak;
+}
+
+// ------------------------------------------------------------------
+// Shop UI
+// ------------------------------------------------------------------
+async function renderShop(balance) {
+  const listEl = document.getElementById('shop-items-list');
+  const invEl  = document.getElementById('shop-inventory');
+  if (!listEl) return;
+
+  const now = Date.now();
+  const allPurchases = await db.purchases.toArray();
+  const activeBoost = allPurchases
+    .filter(p => p.type === 'xp-boost' && (p.expiresAt ?? 0) > now)
+    .sort((a, b) => b.expiresAt - a.expiresAt)[0];
+  const unusedFreezes = allPurchases.filter(p => p.type === 'streak-freeze' && !p.usedForDate).length;
+
+  let itemsHtml = '';
+  for (const item of SHOP_ITEMS) {
+    const canAfford = balance >= item.cost;
+    let tag = '';
+    let disabled = !canAfford;
+    if (item.id === 'xp-boost' && activeBoost) {
+      tag = `${Math.max(1, Math.ceil((activeBoost.expiresAt - now) / 3600000))}h left`;
+      disabled = true;
+    }
+    if (item.id === 'streak-freeze' && unusedFreezes > 0) tag = `${unusedFreezes} owned`;
+    itemsHtml += `
+      <div class="shop-item">
+        <div class="shop-item-icon">${item.icon}</div>
+        <div class="shop-item-info">
+          <div class="shop-item-name">${item.name}</div>
+          <div class="shop-item-desc">${item.desc}</div>
+          <div class="shop-item-detail">${item.detail}</div>
+          ${tag ? `<div class="shop-item-tag">${tag}</div>` : ''}
+        </div>
+        <button class="shop-buy-btn" data-item="${item.id}" ${disabled ? 'disabled' : ''}>◆ ${item.cost}</button>
+      </div>`;
+  }
+  listEl.innerHTML = itemsHtml;
+
+  listEl.querySelectorAll('.shop-buy-btn:not([disabled])').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const success = await purchaseItem(btn.dataset.item, balance);
+      if (!success) return;
+      await render();
+      const newXP = await calcXP();
+      const lv = calcLevelInfo(newXP);
+      const newBal = await getCreditBalance(lv.level);
+      const balEl = document.getElementById('shop-bal-display');
+      if (balEl) balEl.textContent = newBal;
+      await renderShop(newBal);
+    });
+  });
+
+  const invItems = [];
+  if (activeBoost) invItems.push(`⚡ XP Boost — ${Math.max(1, Math.ceil((activeBoost.expiresAt - now) / 3600000))}h remaining`);
+  if (unusedFreezes > 0) invItems.push(`🧊 ${unusedFreezes} streak freeze${unusedFreezes > 1 ? 's' : ''} ready`);
+  invEl.innerHTML = invItems.length
+    ? `<div class="shop-inv-title">Your inventory</div>` + invItems.map(i => `<div class="shop-inv-row">${i}</div>`).join('')
+    : '';
+}
+
+async function openShop() {
+  const overlay = document.getElementById('shop-overlay');
+  if (!overlay) return;
+  const xp = await calcXP();
+  const lv = calcLevelInfo(xp);
+  const bal = await getCreditBalance(lv.level);
+  const balEl = document.getElementById('shop-bal-display');
+  if (balEl) balEl.textContent = bal;
+  overlay.removeAttribute('hidden');
+  requestAnimationFrame(() => overlay.classList.add('open'));
+  await renderShop(bal);
+}
+
+function closeShop() {
+  const overlay = document.getElementById('shop-overlay');
+  if (!overlay) return;
+  overlay.classList.remove('open');
+  setTimeout(() => overlay.setAttribute('hidden', ''), 300);
 }
 
 // ------------------------------------------------------------------
@@ -221,6 +356,11 @@ async function render() {
 
   const main = document.getElementById('main');
   const [completions, streak, totalXP] = await Promise.all([loadCompletions(currentDate), calcStreak(), calcXP()]);
+  const lv = calcLevelInfo(totalXP);
+  const [balance, activeBoost] = await Promise.all([
+    getCreditBalance(lv.level),
+    db.purchases.where('type').equals('xp-boost').filter(p => (p.expiresAt ?? 0) > Date.now()).first(),
+  ]);
 
   const badge = document.getElementById('streak-badge');
   const countEl = document.getElementById('streak-count');
@@ -228,6 +368,8 @@ async function render() {
     countEl.textContent = streak;
     badge.hidden = streak === 0;
   }
+  const creditsEl = document.getElementById('header-credits');
+  if (creditsEl) creditsEl.textContent = balance;
 
   const groups = [];
   for (const time of TIME_ORDER) {
@@ -242,16 +384,17 @@ async function render() {
   const pct = total > 0 ? Math.round((totalDone / total) * 100) : 0;
   const complete = totalDone === total && total > 0;
 
-  const lv = calcLevelInfo(totalXP);
-  const xpLabel = lv.xpNeeded !== null
-    ? `${lv.xpIntoLevel} / ${lv.xpNeeded} XP`
-    : `MAX`;
-
+  const xpLabel = lv.xpNeeded !== null ? `${lv.xpIntoLevel} / ${lv.xpNeeded} XP` : `MAX`;
   const doubleToday = isDoubleXPDay(dateKey(currentDate));
+  const anybanner = doubleToday || activeBoost;
 
-  let html = `<div class="xp-card${doubleToday ? ' xp-double-active' : ''}">`;
-  if (doubleToday) {
+  let html = `<div class="xp-card${anybanner ? ' xp-double-active' : ''}">`;
+  if (doubleToday && activeBoost) {
+    html += `<div class="xp-double-banner">⚡ 4× XP — Double Day + Boost!</div>`;
+  } else if (doubleToday) {
     html += `<div class="xp-double-banner">⚡ Double XP Day!</div>`;
+  } else if (activeBoost) {
+    html += `<div class="xp-double-banner">⚡ XP Boost Active!</div>`;
   }
   html += `<div class="xp-card-row">`;
   html += `<span class="xp-level">Lv.${lv.level} <span class="xp-name">${lv.name}</span></span>`;
@@ -328,6 +471,10 @@ async function init() {
 
   btnPrev.addEventListener('click', () => setDate(addDays(currentDate, -1)));
   btnNext.addEventListener('click', () => setDate(addDays(currentDate, 1)));
+
+  document.getElementById('shop-btn').addEventListener('click', openShop);
+  document.getElementById('shop-close').addEventListener('click', closeShop);
+  document.getElementById('shop-backdrop').addEventListener('click', closeShop);
 
   // Swipe left/right to change day. Don't preventDefault so vertical scroll stays intact.
   let swipeStartX = 0;
