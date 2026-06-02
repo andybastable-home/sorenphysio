@@ -723,30 +723,6 @@ body {
 
 .companion-art { display: flex; align-items: flex-end; }
 
-.companion-bubble {
-  background: var(--surface-2);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--r-md);
-  padding: 8px 10px;
-  font-size: var(--fs-xs);
-  color: var(--text);
-  max-width: 180px;
-  text-align: center;
-  line-height: 1.4;
-  position: relative;
-  box-shadow: var(--shadow-1);
-}
-.companion-bubble[hidden] { display: none; }
-.companion-bubble::after {
-  content: '';
-  position: absolute;
-  bottom: -7px;
-  right: 20px;
-  border: 7px solid transparent;
-  border-top-color: var(--border-strong);
-  border-bottom: none;
-}
-
 /* ---------------- Droid collection grid ---------------- */
 .droid-grid {
   display: grid;
@@ -842,15 +818,7 @@ body {
 .droid-reveal-name {
   font-size: var(--fs-lg);
   font-weight: var(--fw-black);
-  margin-bottom: var(--s2);
-}
-
-.droid-reveal-quote {
-  font-size: var(--fs-sm);
-  color: var(--text-muted);
-  font-style: italic;
   margin-bottom: var(--s5);
-  line-height: 1.5;
 }
 
 .droid-reveal-close {
