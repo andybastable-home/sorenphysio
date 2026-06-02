@@ -77,7 +77,6 @@ const DROIDS = [
   { id:'b1',       name:'B1 Battle Droid',    rarity:'common'    },
   { id:'superb2',  name:'Super Battle Droid', rarity:'rare'      },
   { id:'r7',       name:'R7 Astromech',       rarity:'rare'      },
-  { id:'a7',       name:'A7 Medical Droid',   rarity:'rare'      },
   { id:'medical',  name:'2-1B Surgical',      rarity:'rare'      },
   { id:'b2emo',    name:'B2EMO',              rarity:'epic'      },
   { id:'spybot',   name:'Spy Probe Droid',    rarity:'epic'      },
@@ -105,9 +104,6 @@ const DROID_ART = {
 
   // R7-A7 Astromech: deep maroon body, olive-green dome accents, blue logic eye, three legs
   r7: `<path d="M12,22 a18,16 0 0 1 36,0 Z" fill="#7a1f18"/><path d="M16,18 a14,13 0 0 1 28,0 Z" fill="#8a9a36"/><rect x="12" y="20" width="36" height="2" fill="#5a5a5a"/><circle cx="30" cy="13" r="3.5" fill="#3a3a3a"/><circle cx="30" cy="13" r="2" fill="#aaccdd"/><rect x="21" y="9" width="4" height="3" rx="0.5" fill="#cc2222"/><rect x="26" y="8" width="4" height="3" rx="0.5" fill="#dddddd"/><rect x="11" y="22" width="38" height="34" rx="4" fill="#7a1f18"/><polygon points="18,28 40,28 40,32 22,32 22,40 18,40" fill="#8a9a36"/><rect x="15" y="34" width="5" height="9" rx="1" fill="#3a3a3a"/><circle cx="20" cy="48" r="4" fill="#3a7a9a"/><circle cx="20" cy="48" r="2" fill="#bfe0ee"/><rect x="33" y="36" width="12" height="14" rx="2" fill="#6a1a14"/><rect x="9" y="50" width="6" height="20" rx="2" fill="#b0b0b0"/><rect x="45" y="50" width="6" height="20" rx="2" fill="#b0b0b0"/><polygon points="6,70 18,70 16,78 8,78" fill="#9a9a9a"/><polygon points="42,70 54,70 52,78 44,78" fill="#9a9a9a"/><rect x="25" y="56" width="10" height="16" rx="2" fill="#6a1a14"/><polygon points="22,72 38,72 36,78 24,78" fill="#7a7a7a"/>`,
-
-  // A7 Medical Droid: white spherical head, blue eye, four outstretched arms
-  a7: `<circle cx="30" cy="14" r="12" fill="#cccccc"/><circle cx="30" cy="14" r="8" fill="#aaaaaa"/><circle cx="30" cy="14" r="4" fill="#0088ff" opacity="0.85"/><circle cx="30" cy="14" r="2" fill="#222"/><rect x="22" y="24" width="16" height="22" rx="3" fill="#bbbbbb"/><line x1="22" y1="27" x2="5" y2="19" stroke="#aaa" stroke-width="4" stroke-linecap="round"/><line x1="38" y1="27" x2="55" y2="19" stroke="#aaa" stroke-width="4" stroke-linecap="round"/><line x1="22" y1="36" x2="5" y2="38" stroke="#aaa" stroke-width="3.5" stroke-linecap="round"/><line x1="38" y1="36" x2="55" y2="38" stroke="#aaa" stroke-width="3.5" stroke-linecap="round"/><circle cx="5" cy="19" r="4.5" fill="#888"/><circle cx="55" cy="19" r="4.5" fill="#888"/><circle cx="5" cy="38" r="3.5" fill="#888"/><circle cx="55" cy="38" r="3.5" fill="#888"/><rect x="24" y="46" width="6" height="24" rx="3" fill="#aaa"/><rect x="30" y="46" width="6" height="24" rx="3" fill="#aaa"/>`,
 
   // 2-1B Surgical Droid: humanoid silver-grey, twin amber eyes, exposed chest wiring, claw + tool arms
   medical: `<rect x="25" y="20" width="10" height="6" rx="1" fill="#7a7e84"/><path d="M23,10 a7,7 0 0 1 14,0 l-1,8 l-12,0 Z" fill="#9ca2aa"/><circle cx="27" cy="11" r="2" fill="#e0c020"/><circle cx="33" cy="11" r="2" fill="#e0c020"/><rect x="21" y="26" width="18" height="20" rx="3" fill="#8a9098"/><path d="M30,27 q9,3 4,9 q-9,3 -4,9" stroke="#cfd3d8" stroke-width="1.6" fill="none"/><rect x="24" y="29" width="12" height="3" rx="1" fill="#6a6e74"/><line x1="22" y1="30" x2="9" y2="24" stroke="#7a7e84" stroke-width="3" stroke-linecap="round"/><circle cx="9" cy="24" r="2.4" fill="#5a5e64"/><line x1="9" y1="24" x2="8" y2="38" stroke="#7a7e84" stroke-width="2.6" stroke-linecap="round"/><path d="M5,38 l3,3 M11,38 l-3,3" stroke="#5a5e64" stroke-width="1.6" stroke-linecap="round"/><line x1="38" y1="30" x2="50" y2="26" stroke="#7a7e84" stroke-width="3" stroke-linecap="round"/><circle cx="50" cy="26" r="2.4" fill="#5a5e64"/><line x1="50" y1="26" x2="52" y2="38" stroke="#7a7e84" stroke-width="2.6" stroke-linecap="round"/><circle cx="52" cy="40" r="2.6" fill="#3a3d42"/><rect x="24" y="46" width="5" height="20" rx="2" fill="#7a7e84"/><rect x="31" y="46" width="5" height="20" rx="2" fill="#7a7e84"/><path d="M20,66 L31,66 L30,72 L19,73 Z" fill="#1f2226"/><path d="M40,66 L29,66 L30,72 L41,73 Z" fill="#1f2226"/>`,
@@ -457,8 +453,9 @@ async function renderShop(balance) {
   if (!collEl) return;
   const owned = await getCollection();
   const ownedIds = new Set(owned.map(c => c.droidId));
+  const ownedCount = DROIDS.filter(d => ownedIds.has(d.id)).length;
   const activeDroidId = await getActiveCompanion();
-  let collHtml = `<div class="shop-inv-title" style="margin-top:20px">Droid Collection (${ownedIds.size}/${DROIDS.length})</div><div class="droid-grid">`;
+  let collHtml = `<div class="shop-inv-title" style="margin-top:20px">Droid Collection (${ownedCount}/${DROIDS.length})</div><div class="droid-grid">`;
   for (const droid of DROIDS) {
     const isOwned  = ownedIds.has(droid.id);
     const isActive = droid.id === activeDroidId;
@@ -566,7 +563,7 @@ async function render() {
   const widget = document.getElementById('companion-widget');
   const widgetArt = document.getElementById('companion-art');
   if (widget && widgetArt) {
-    if (activeDroidId) {
+    if (activeDroidId && DROIDS.some(d => d.id === activeDroidId)) {
       const companionSize = activeDroidId === 'k2so' ? 108 : 78;
       widgetArt.innerHTML = renderDroid(activeDroidId, companionSize);
       widget.hidden = false;
