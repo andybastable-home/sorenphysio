@@ -1,5 +1,5 @@
 // Bump CACHE_VERSION whenever shell files change so updates roll cleanly.
-const CACHE_VERSION = 'v0.5.8';
+const CACHE_VERSION = 'v0.5.9';
 const CACHE_NAME = `physio-shell-${CACHE_VERSION}`;
 
 const DEXIE_URL = 'https://unpkg.com/dexie@4.4.2/dist/dexie.min.js';
