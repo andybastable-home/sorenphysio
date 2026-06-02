@@ -1,5 +1,5 @@
 // Bump CACHE_VERSION whenever shell files change so updates roll cleanly.
-const CACHE_VERSION = 'v0.5.9';
+const CACHE_VERSION = 'v0.6.0';
 const CACHE_NAME = `physio-shell-${CACHE_VERSION}`;
 
 const DEXIE_URL = 'https://unpkg.com/dexie@4.4.2/dist/dexie.min.js';
@@ -16,7 +16,11 @@ const SHELL = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL))
+    caches.open(CACHE_NAME).then((cache) =>
+      // {cache:'reload'} bypasses the browser HTTP cache so we always precache
+      // the freshest shell on install, never a stale copy.
+      cache.addAll(SHELL.map((url) => new Request(url, { cache: 'reload' })))
+    )
   );
   self.skipWaiting();
 });
@@ -31,11 +35,17 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Network-first with cache fallback.
+// Network-first with cache fallback. Same-origin shell files are fetched with
+// {cache:'reload'} so the browser HTTP cache can never serve a stale app.js /
+// styles.css — updated code shows up on the next load instead of lingering.
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  const sameOrigin = new URL(event.request.url).origin === self.location.origin;
+  const networkFetch = sameOrigin
+    ? fetch(event.request, { cache: 'reload' })
+    : fetch(event.request);
   event.respondWith(
-    fetch(event.request)
+    networkFetch
       .then((response) => {
         if (response && response.ok) {
           const clone = response.clone();
