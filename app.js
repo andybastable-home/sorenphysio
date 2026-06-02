@@ -190,7 +190,9 @@ async function calcCreditsSpent() {
 }
 
 async function getCreditBalance(level) {
-  return Math.max(0, calcCreditsEarned(level) - await calcCreditsSpent());
+  const dev = await db.settings.get('dev-bonus-credits');
+  const bonus = dev?.value ?? 0;
+  return Math.max(0, calcCreditsEarned(level) + bonus - await calcCreditsSpent());
 }
 
 async function purchaseItem(itemId, balance) {
@@ -669,6 +671,21 @@ async function render() {
 // Init
 // ------------------------------------------------------------------
 async function init() {
+  // Dev helper: visit ?devcredits=N to set a bonus credit balance for testing.
+  // Visit ?devcredits=0 to clear it. The param is stripped from the URL after.
+  const params = new URLSearchParams(location.search);
+  if (params.has('devcredits')) {
+    const n = parseInt(params.get('devcredits'), 10) || 0;
+    if (n > 0) {
+      await db.settings.put({ key: 'dev-bonus-credits', value: n });
+    } else {
+      await db.settings.delete('dev-bonus-credits');
+    }
+    params.delete('devcredits');
+    const clean = location.pathname + (params.toString() ? '?' + params : '');
+    history.replaceState(null, '', clean);
+  }
+
   const btnPrev = document.getElementById('btn-prev');
   const btnNext = document.getElementById('btn-next');
   const main = document.getElementById('main');
