@@ -684,6 +684,16 @@ async function init() {
     params.delete('devcredits');
     const clean = location.pathname + (params.toString() ? '?' + params : '');
     history.replaceState(null, '', clean);
+    // TEMP diagnostic — shows what actually happened (remove once working).
+    try {
+      const check = await db.settings.get('dev-bonus-credits');
+      const xp = await calcXP();
+      const lvl = calcLevelInfo(xp).level;
+      const bal = await getCreditBalance(lvl);
+      alert(`devcredits requested: ${n}\nstored value: ${check?.value}\nlevel: ${lvl}\nbalance now: ${bal}`);
+    } catch (e) {
+      alert('devcredits ERROR: ' + (e && e.message ? e.message : e));
+    }
   }
 
   const btnPrev = document.getElementById('btn-prev');
