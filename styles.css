@@ -624,6 +624,34 @@ body {
 
 /* ---------------- Per-droid character animations ---------------- */
 
+/* Mouse Droid: jittery scurry */
+@keyframes mouse-scurry {
+  0%,100% { transform: translateX(-3px) translateY(0); }
+  25%     { transform: translateX(3px) translateY(-1px); }
+  50%     { transform: translateX(-2px) translateY(0); }
+  75%     { transform: translateX(2px) translateY(-1px); }
+}
+.droid-id-mouse { animation: mouse-scurry 0.45s ease-in-out infinite !important; }
+
+/* B1 Battle Droid: marching Roger Roger */
+@keyframes b1-march {
+  0%,100% { transform: rotate(-4deg) translateX(-2px) translateY(0); }
+  25%     { transform: rotate(0deg)  translateX(0)    translateY(-3px); }
+  50%     { transform: rotate(4deg)  translateX(2px)  translateY(0); }
+  75%     { transform: rotate(0deg)  translateX(0)    translateY(-3px); }
+}
+.droid-id-b1 {
+  animation: b1-march 0.85s ease-in-out infinite !important;
+  transform-origin: bottom center;
+}
+
+/* Probe Droid: slow menacing hover-scan */
+@keyframes spybot-scan {
+  0%,100% { transform: translateY(0) rotate(-12deg); }
+  50%     { transform: translateY(-9px) rotate(12deg); }
+}
+.droid-id-spybot { animation: spybot-scan 3.5s ease-in-out infinite !important; }
+
 /* Gonk: slow plodding waddle */
 @keyframes gonk-plod {
   0%,100% { transform: rotate(0deg); }
