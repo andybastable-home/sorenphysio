@@ -671,29 +671,25 @@ async function render() {
 // Init
 // ------------------------------------------------------------------
 async function init() {
-  // Dev helper: visit ?devcredits=N to set a bonus credit balance for testing.
-  // Visit ?devcredits=0 to clear it. The param is stripped from the URL after.
-  const params = new URLSearchParams(location.search);
-  if (params.has('devcredits')) {
-    const n = parseInt(params.get('devcredits'), 10) || 0;
-    if (n > 0) {
-      await db.settings.put({ key: 'dev-bonus-credits', value: n });
-    } else {
-      await db.settings.delete('dev-bonus-credits');
-    }
-    params.delete('devcredits');
-    const clean = location.pathname + (params.toString() ? '?' + params : '');
-    history.replaceState(null, '', clean);
-    // TEMP diagnostic — shows what actually happened (remove once working).
-    try {
-      const check = await db.settings.get('dev-bonus-credits');
-      const xp = await calcXP();
-      const lvl = calcLevelInfo(xp).level;
-      const bal = await getCreditBalance(lvl);
-      alert(`devcredits requested: ${n}\nstored value: ${check?.value}\nlevel: ${lvl}\nbalance now: ${bal}`);
-    } catch (e) {
-      alert('devcredits ERROR: ' + (e && e.message ? e.message : e));
-    }
+  // Dev: tap the footer version number 5 times to set bonus testing credits.
+  const versionEl = document.getElementById('version');
+  if (versionEl) {
+    let taps = 0;
+    let tapTimer = null;
+    versionEl.addEventListener('click', async () => {
+      taps++;
+      clearTimeout(tapTimer);
+      tapTimer = setTimeout(() => { taps = 0; }, 800);
+      if (taps < 5) return;
+      taps = 0;
+      const current = (await db.settings.get('dev-bonus-credits'))?.value ?? 0;
+      const input = prompt('Set bonus testing credits (0 to clear):', current);
+      if (input === null) return;
+      const n = parseInt(input, 10) || 0;
+      if (n > 0) await db.settings.put({ key: 'dev-bonus-credits', value: n });
+      else await db.settings.delete('dev-bonus-credits');
+      await render();
+    });
   }
 
   const btnPrev = document.getElementById('btn-prev');
